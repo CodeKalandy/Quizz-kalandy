@@ -73,7 +73,6 @@
                     const me = data.players.find(p => p.nickname === nick);
                     if(me) {
                         let zAura = (me.aura == 1 || me.aura == 5) ? 30 : 5;
-                        // CORRECTION CENTRAGE AURA
                         let auraHtml = me.aura > 0 ? `<img src="personnage/aura/aura${me.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura};">` : '';
                         let badge = me.is_member ? `<div class="absolute -bottom-1 -right-1 bg-yellow-400 text-black text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white z-40 shadow-sm" title="VIP">★</div>` : '';
                         
@@ -116,7 +115,6 @@
                 } 
                 else if (data.status === 'playing') {
                     if (!answered) {
-                        // ON AFFICHE LA QUESTION ET LES RÉPONSES SUR LE TÉLÉPHONE
                         document.getElementById('q-text').innerText = data.question.question_text;
                         document.getElementById('opt1-text').innerText = data.question.opt1;
                         document.getElementById('opt2-text').innerText = data.question.opt2;
@@ -131,11 +129,17 @@
                     }
                 } 
                 else if (data.status === 'leaderboard') {
+                    const isLast = data.current_q_index === data.questions_list.length - 1;
                     document.getElementById('q-container').classList.add('hidden');
                     document.getElementById('grid').classList.add('hidden');
                     document.getElementById('grid').classList.remove('grid');
                     document.getElementById('msg').classList.remove('hidden');
-                    document.getElementById('msg').innerHTML = "TEMPS ÉCOULÉ !<br><span class='text-lg font-normal text-yellow-400 mt-2 block normal-case'>Regardez le classement sur l'écran !</span>";
+                    
+                    if (isLast) {
+                        document.getElementById('msg').innerHTML = "FIN DES QUESTIONS !<br><span class='text-lg font-normal text-yellow-400 mt-2 block normal-case'>Le podium va apparaître...</span>";
+                    } else {
+                        document.getElementById('msg').innerHTML = "TEMPS ÉCOULÉ !<br><span class='text-lg font-normal text-yellow-400 mt-2 block normal-case'>Regardez le classement sur l'écran !</span>";
+                    }
                 }
                 else if (data.status === 'finished') {
                     document.getElementById('q-container').classList.add('hidden');

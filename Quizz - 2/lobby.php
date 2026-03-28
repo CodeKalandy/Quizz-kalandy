@@ -43,9 +43,14 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
             <div>
                 <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Coupe de cheveux</p>
                 <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
-                    <?php for($i=1; $i<=10; $i++): ?>
-                        <div onclick="setHair(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
+                    <?php for($i=1; $i<=10; $i++): 
+                        $locked = ($is_member === 'false' && $i > 5);
+                    ?>
+                        <div onclick="setHair(<?= $i ?>)" class="relative flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1 <?= $locked ? 'opacity-60 grayscale' : '' ?>">
                             <img src="personnage/cheveux/cheveux<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
+                            <?php if($locked): ?>
+                                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10 rounded-xl"><span class="text-xl drop-shadow-md">🔒</span></div>
+                            <?php endif; ?>
                         </div>
                     <?php endfor; ?>
                 </div>
@@ -54,21 +59,36 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
             <div>
                 <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Style vestimentaire</p>
                 <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
-                    <?php for($i=1; $i<=10; $i++): ?>
-                        <div onclick="setOutfit(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
+                    <?php for($i=1; $i<=10; $i++): 
+                        $locked = ($is_member === 'false' && $i > 5);
+                    ?>
+                        <div onclick="setOutfit(<?= $i ?>)" class="relative flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1 <?= $locked ? 'opacity-60 grayscale' : '' ?>">
                             <img src="personnage/tenue/tenue<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
+                            <?php if($locked): ?>
+                                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10 rounded-xl"><span class="text-xl drop-shadow-md">🔒</span></div>
+                            <?php endif; ?>
                         </div>
                     <?php endfor; ?>
                 </div>
             </div>
 
             <div>
-                <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Aura magique</p>
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Aura magique</p>
+                    <?php if($is_member === 'false'): ?>
+                        <span class="text-[10px] font-black text-yellow-500 uppercase bg-yellow-50 px-2 py-0.5 rounded">🔒 VIP UNIQUEMENT</span>
+                    <?php endif; ?>
+                </div>
                 <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
                     <div onclick="setAura(0)" class="flex-shrink-0 w-14 h-14 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer font-bold text-gray-400">Ø</div>
-                    <?php for($i=1; $i<=5; $i++): ?>
-                        <div onclick="setAura(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
+                    <?php for($i=1; $i<=5; $i++): 
+                        $locked = ($is_member === 'false');
+                    ?>
+                        <div onclick="setAura(<?= $i ?>)" class="relative flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1 <?= $locked ? 'opacity-60 grayscale' : '' ?>">
                             <img src="personnage/aura/aura<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
+                            <?php if($locked): ?>
+                                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10 rounded-xl"><span class="text-xl drop-shadow-md">🔒</span></div>
+                            <?php endif; ?>
                         </div>
                     <?php endfor; ?>
                 </div>
@@ -81,24 +101,27 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
     </div>
 
     <script>
+        const isMember = <?= $is_member ?>;
         let hair = 1, outfit = 1, aura = 0;
 
         function setHair(id) { 
+            if (!isMember && id > 5) return alert("Cette coiffure est réservée aux membres inscrits !");
             hair = id; 
             document.getElementById('prev-hair').src = `personnage/cheveux/cheveux${id}.png`; 
         }
         function setOutfit(id) { 
+            if (!isMember && id > 5) return alert("Cette tenue est réservée aux membres inscrits !");
             outfit = id; 
             document.getElementById('prev-outfit').src = `personnage/tenue/tenue${id}.png`; 
         }
         function setAura(id) { 
+            if (!isMember && id > 0) return alert("Les auras sont réservées aux membres inscrits !");
             aura = id; 
             const cont = document.getElementById('prev-aura-container');
             if(id === 0) {
                 cont.innerHTML = '';
             } else {
                 let zIndex = (id == 1 || id == 5) ? 30 : 5;
-                // CORRECTION CENTRAGE AURA
                 cont.innerHTML = `<img src="personnage/aura/aura${id}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zIndex};">`;
             }
         }
@@ -115,7 +138,7 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
                     hair: hair, 
                     outfit: outfit, 
                     aura: aura,
-                    is_member: <?= $is_member ?>
+                    is_member: isMember
                 })
             })
             .then(r => r.json())

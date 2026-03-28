@@ -10,6 +10,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Écran Hôte - Bernard Quizz</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         @keyframes popIn {
             0% { transform: scale(0.5); opacity: 0; }
@@ -50,9 +51,9 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             20
         </div>
 
-        <div id="leaderboard" class="w-full h-full flex flex-col items-center justify-end pb-4 hidden">
-            <h3 id="leaderboard-title" class="text-3xl font-black text-center mb-6 uppercase text-indigo-300 tracking-widest absolute top-10"></h3>
-            <div id="players-list" class="w-full h-full flex items-end justify-center"></div>
+        <div id="leaderboard" class="w-full h-full flex flex-col items-center justify-start pt-10 pb-4 hidden">
+            <h3 id="leaderboard-title" class="text-5xl font-black text-center mb-8 uppercase text-yellow-400 tracking-widest relative z-30"></h3>
+            <div id="players-list" class="w-full h-full flex items-end justify-center mt-10"></div>
         </div>
 
     </div>
@@ -104,6 +105,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                     document.getElementById('q-img').classList.remove('hidden');
                 } else {
                     document.getElementById('q-img').src = '';
+                    document.getElementById('q-img').classList.add('hidden');
                 }
                 
                 transitionTimeout = setTimeout(() => { fetch(`api_live.php?action=activate_playing&pin=<?= htmlspecialchars($pin) ?>`).then(sync); }, 2000);
@@ -115,6 +117,8 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 
                 if (data.question.image_url && data.question.image_url.trim() !== '') {
                     document.getElementById('q-img').classList.remove('hidden');
+                } else {
+                    document.getElementById('q-img').classList.add('hidden');
                 }
                 
                 for(let i=1; i<=4; i++) document.querySelector(`#ans${i} .text`).innerText = data.question[`opt${i}`];
@@ -154,7 +158,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 
                 document.getElementById('leaderboard').classList.remove('hidden');
                 document.getElementById('leaderboard-title').innerText = "🏆 PODIUM FINAL 🏆";
-                document.getElementById('leaderboard-title').classList.add('text-yellow-400', 'text-5xl');
                 
                 renderPodium(data);
             }
@@ -191,7 +194,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             let sortedPlayers = [...data.players].sort((a, b) => (data.scores[b.nickname] || 0) - (data.scores[a.nickname] || 0));
             let html = `<div class="relative w-full h-full flex flex-col items-center justify-end">`;
             
-            // 4ème place et + (Apparaissent doucement, sans rebond)
             html += `<div class="absolute bottom-0 w-full flex justify-center gap-4 flex-wrap px-10 mb-2 z-0">`;
             for(let i = 3; i < sortedPlayers.length; i++) {
                 let p = sortedPlayers[i];
@@ -211,7 +213,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             }
             html += `</div>`;
 
-            // Blocs du Podium
             html += `<div class="flex items-end justify-center gap-4 md:gap-8 z-10 w-full max-w-4xl mx-auto h-[400px]">`;
 
             const getWinnerHtml = (p, id, place, medal, heightClass, bgClass, colorClass, borderClass) => {
@@ -264,8 +265,38 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             
             setTimeout(() => { 
                 let winner = document.getElementById('winner-block'); 
-                if(winner) { winner.classList.remove('silhouette'); winner.classList.add('revealed'); }
+                if(winner) { 
+                    winner.classList.remove('silhouette'); 
+                    winner.classList.add('revealed'); 
+                    
+                    // CONFETTIS : On lance des salves de confettis sur tout l'écran !
+                    fireConfetti();
+                }
             }, 16000);
+        }
+
+        // --- FONCTION DE LANCER DE CONFETTIS (Grand spectacle) ---
+        function fireConfetti() {
+          const duration = 15 * 1000;
+          const animationEnd = Date.now() + duration;
+          const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+          function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+          }
+
+          const interval = setInterval(function() {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+              return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+            // Salves depuis le haut-gauche et le haut-droit
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+          }, 250);
         }
 
         setInterval(sync, 1500);
