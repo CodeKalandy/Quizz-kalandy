@@ -35,7 +35,8 @@ switch ($action) {
                 'nickname' => $nick,
                 'hair' => (int)($input['hair'] ?? 1),
                 'outfit' => (int)($input['outfit'] ?? 1),
-                'aura' => (int)($input['aura'] ?? 0)
+                'aura' => (int)($input['aura'] ?? 0),
+                'is_member' => filter_var($input['is_member'] ?? false, FILTER_VALIDATE_BOOLEAN)
             ];
             $scoresArr[$nick] = 0;
             $state['scores'] = (object)$scoresArr;

@@ -12,7 +12,6 @@ if (isset($_POST['start_session'])) {
     $chemin_dossier = __DIR__ . '/sessions';
     if (!is_dir($chemin_dossier)) { mkdir($chemin_dossier, 0777, true); }
     
-    // Ajout du paramètre 'mode' et 'eliminated' pour le Battle Royale
     $fichier_partie = $chemin_dossier . '/game_' . $pin . '.json';
     $blank = [
         'mode' => $mode,
@@ -46,7 +45,7 @@ if (isset($_POST['start_session'])) {
                     <label class="font-bold text-sm uppercase text-gray-500">Mode de jeu</label>
                     <select name="game_mode" class="w-full p-4 border-2 rounded-xl mt-2 outline-none focus:border-indigo-500 font-bold text-gray-700 bg-gray-50">
                         <option value="classique">🏆 Classique (Points au temps)</option>
-                        <option value="br">⚔️ Battle Royale (Élimination à chaque question)</option>
+                        <option value="br">⚔️ Battle Royale (Élimination)</option>
                     </select>
                 </div>
                 <button name="start_session" class="mt-4 bg-indigo-600 text-white px-10 py-4 rounded-xl font-black text-xl hover:bg-indigo-700 transition shadow-lg w-full">
@@ -58,12 +57,12 @@ if (isset($_POST['start_session'])) {
         <p class="text-xl mb-2 italic text-indigo-200">Rejoignez sur votre téléphone avec le code :</p>
         <h1 class="text-7xl md:text-9xl font-black mb-12 tracking-widest bg-white text-indigo-600 px-12 py-6 rounded-3xl shadow-2xl"><?= htmlspecialchars($current_pin) ?></h1>
         
-        <div class="w-full max-w-5xl bg-indigo-800 bg-opacity-40 p-8 rounded-3xl border-2 border-indigo-400 border-dashed">
+        <div class="w-full max-w-6xl bg-indigo-800 bg-opacity-40 p-8 rounded-3xl border-2 border-indigo-400 border-dashed">
             <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                <h3 class="text-2xl font-bold uppercase tracking-widest">Joueurs : <span id="count" class="text-yellow-400 text-3xl font-black">0</span></h3>
+                <h3 class="text-2xl font-bold uppercase tracking-widest">Joueurs en attente : <span id="count" class="text-yellow-400 text-3xl font-black">0</span></h3>
                 <button id="go-btn" onclick="startGame()" class="hidden bg-green-500 hover:bg-green-400 text-white px-10 py-4 rounded-2xl font-black text-xl transition shadow-lg transform hover:scale-105">LANCER LE JEU !</button>
             </div>
-            <div id="list" class="flex flex-wrap gap-6 justify-center"></div>
+            <div id="list" class="flex flex-wrap gap-8 justify-center"></div>
         </div>
 
         <script>
@@ -81,10 +80,22 @@ if (isset($_POST['start_session'])) {
 
                     list.innerHTML = '';
                     data.players.forEach(p => {
-                        const div = document.createElement('div');
-                        div.className = 'bg-white text-indigo-900 px-6 py-3 rounded-xl font-black text-lg shadow-md animate-bounce';
-                        div.innerText = p.nickname;
-                        list.appendChild(div);
+                        let zAura = (p.aura == 1 || p.aura == 5) ? 30 : 5;
+                        let auraHtml = p.aura > 0 ? `<img src="personnage/aura/aura${p.aura}.png" class="absolute w-[180%] h-[180%] object-contain animate-pulse" style="z-index: ${zAura}; top:-40%; left:-40%;">` : '';
+                        let badge = p.is_member ? `<div class="absolute -bottom-2 -right-2 bg-yellow-400 text-black text-[12px] font-black w-6 h-6 flex items-center justify-center rounded-full border-2 border-white z-40 shadow-lg" title="Joueur VIP">★</div>` : '';
+
+                        list.innerHTML += `
+                            <div class="bg-white text-indigo-900 p-4 rounded-2xl font-bold text-center shadow-lg transform transition hover:-translate-y-2 animate-bounce flex flex-col items-center">
+                                <div class="relative w-20 h-20 bg-gray-100 rounded-full shadow-inner overflow-visible border-2 border-indigo-200 mb-3 flex items-end justify-center">
+                                    ${auraHtml}
+                                    <div class="relative w-full h-full overflow-hidden rounded-full flex items-end justify-center">
+                                        <img src="personnage/tenue/tenue${p.outfit}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;">
+                                        <img src="personnage/cheveux/cheveux${p.hair}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;">
+                                    </div>
+                                    ${badge}
+                                </div>
+                                <span class="truncate text-sm uppercase tracking-widest px-2">${p.nickname}</span>
+                            </div>`;
                     });
                 });
             }

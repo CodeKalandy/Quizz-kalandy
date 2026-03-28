@@ -2,6 +2,10 @@
 require_once 'db.php';
 $pin = $_GET['pin'] ?? '';
 $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
+$is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
+
+// On définit les limites dynamiquement selon le statut VIP
+$limit_items = ($is_member === 'true') ? 10 : 5;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -12,45 +16,38 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
     <title>Avatar - Bernard Quizz</title>
     <style>
         .preview-container { 
-            width: 120px; 
-            height: 120px; 
-            position: relative; 
-            margin: 0 auto 20px; 
-            background: #f3f4f6;
-            border-radius: 20px;
-            overflow: hidden;
+            width: 120px; height: 120px; position: relative; 
+            margin: 0 auto 20px; background: #f3f4f6; border-radius: 20px; overflow: visible;
         }
-        .preview-container img { 
-            position: absolute; 
-            inset: 0; 
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain; 
-        }
+        .preview-container img.base { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-indigo-600 min-h-screen text-white flex flex-col items-center p-4 font-sans">
 
-    <h1 class="text-2xl font-black mb-4 uppercase tracking-widest">Crée ton Bernard</h1>
+    <h1 class="text-2xl font-black mb-4 uppercase tracking-widest text-center">Crée ton Bernard</h1>
 
     <div class="bg-white text-gray-800 p-6 rounded-3xl shadow-2xl w-full max-w-md">
         
-        <div class="preview-container shadow-inner border-4 border-indigo-100">
-            <img id="prev-outfit" src="personnage/tenue/tenue1.png" style="z-index: 10;">
-            <img id="prev-hair" src="personnage/cheveux/cheveux1.png" style="z-index: 20;">
+        <div class="preview-container shadow-inner border-4 border-indigo-100 flex items-end justify-center">
             <div id="prev-aura-container"></div>
+            <div class="relative w-full h-full overflow-hidden rounded-[15px] flex items-end justify-center z-10">
+                <img id="prev-outfit" src="personnage/tenue/tenue1.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;">
+                <img id="prev-hair" src="personnage/cheveux/cheveux1.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;">
+            </div>
+            <?php if($is_member === 'true'): ?>
+                <div class="absolute -bottom-3 -right-3 bg-yellow-400 text-black text-[14px] font-black w-8 h-8 flex items-center justify-center rounded-full border-2 border-white z-40 shadow-lg" title="Joueur VIP">★</div>
+            <?php endif; ?>
         </div>
 
-        <div class="space-y-5">
+        <div class="space-y-5 mt-6">
             <input type="text" id="nick" maxlength="12" placeholder="TON PSEUDO" value="<?= htmlspecialchars($default_nick) ?>"
                    class="w-full p-4 bg-gray-100 border-none rounded-2xl font-black text-center text-indigo-600 focus:ring-4 focus:ring-indigo-200 outline-none transition-all">
 
             <div>
                 <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Coupe de cheveux</p>
                 <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
-                    <?php for($i=1; $i<=10; $i++): ?>
+                    <?php for($i=1; $i<=$limit_items; $i++): ?>
                         <div onclick="setHair(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
                             <img src="personnage/cheveux/cheveux<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
                         </div>
@@ -61,7 +58,7 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             <div>
                 <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Style vestimentaire</p>
                 <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
-                    <?php for($i=1; $i<=10; $i++): ?>
+                    <?php for($i=1; $i<=$limit_items; $i++): ?>
                         <div onclick="setOutfit(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
                             <img src="personnage/tenue/tenue<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
                         </div>
@@ -70,15 +67,27 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             </div>
 
             <div>
-                <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Aura magique</p>
-                <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
-                    <div onclick="setAura(0)" class="flex-shrink-0 w-14 h-14 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer font-bold text-gray-400">Ø</div>
-                    <?php for($i=1; $i<=5; $i++): ?>
-                        <div onclick="setAura(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
-                            <img src="personnage/aura/aura<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
-                        </div>
-                    <?php endfor; ?>
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Aura magique</p>
+                    <?php if($is_member === 'true'): ?>
+                        <span class="text-[10px] font-black text-yellow-500 uppercase bg-yellow-100 px-2 py-0.5 rounded">VIP</span>
+                    <?php endif; ?>
                 </div>
+                
+                <?php if($is_member === 'true'): ?>
+                    <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
+                        <div onclick="setAura(0)" class="flex-shrink-0 w-14 h-14 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer font-bold text-gray-400">Ø</div>
+                        <?php for($i=1; $i<=5; $i++): ?>
+                            <div onclick="setAura(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
+                                <img src="personnage/aura/aura<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
+                            </div>
+                        <?php endfor; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-center">
+                        <p class="text-[11px] text-indigo-800 font-bold uppercase">⭐ Connecte-toi pour débloquer les auras et plus d'objets !</p>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <button onclick="join()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg transform active:scale-95 transition-all uppercase tracking-widest">
@@ -101,7 +110,12 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
         function setAura(id) { 
             aura = id; 
             const cont = document.getElementById('prev-aura-container');
-            cont.innerHTML = id > 0 ? `<img src="personnage/aura/aura${id}.png" class="animate-pulse" style="z-index: 30; transform: scale(1.3);">` : '';
+            if(id === 0) {
+                cont.innerHTML = '';
+            } else {
+                let zIndex = (id == 1 || id == 5) ? 30 : 5;
+                cont.innerHTML = `<img src="personnage/aura/aura${id}.png" class="absolute w-[180%] h-[180%] object-contain animate-pulse" style="z-index: ${zIndex}; top:-40%; left:-40%;">`;
+            }
         }
 
         function join() {
@@ -115,7 +129,8 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                     nickname: nick, 
                     hair: hair, 
                     outfit: outfit, 
-                    aura: aura
+                    aura: aura,
+                    is_member: <?= $is_member ?>
                 })
             })
             .then(r => r.json())
