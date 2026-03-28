@@ -23,7 +23,7 @@
             </button>
             <div class="text-right">
                 <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest leading-none mb-1">Score</p>
-                <p id="my-score" class="font-black text-2xl text-yellow-400 leading-none">0</p>
+                <p id="my-score" class="font-black text-2xl text-yellow-400 leading-none transition-all duration-500">0</p>
             </div>
         </div>
     </div>
@@ -94,8 +94,17 @@
                     document.getElementById('player-nick').innerText = nick;
                 }
 
+                // CORRECTION DU SCORE : On fige l'affichage si le joueur a répondu et que le temps n'est pas écoulé
                 if(data.scores && data.scores[nick] !== undefined) {
-                    document.getElementById('my-score').innerText = data.scores[nick];
+                    if (!(data.status === 'playing' && answered)) {
+                        let scoreEl = document.getElementById('my-score');
+                        if (scoreEl.innerText !== data.scores[nick].toString()) {
+                            scoreEl.innerText = data.scores[nick];
+                            // Petit effet visuel quand le score monte
+                            scoreEl.classList.add('scale-125', 'text-white');
+                            setTimeout(() => scoreEl.classList.remove('scale-125', 'text-white'), 300);
+                        }
+                    }
                 }
 
                 if (data.eliminated && data.eliminated.includes(nick)) {
