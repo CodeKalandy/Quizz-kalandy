@@ -81,11 +81,12 @@ if (isset($_POST['start_session'])) {
                     list.innerHTML = '';
                     data.players.forEach(p => {
                         let zAura = (p.aura == 1 || p.aura == 5) ? 30 : 5;
-                        let auraHtml = p.aura > 0 ? `<img src="personnage/aura/aura${p.aura}.png" class="absolute w-[180%] h-[180%] object-contain animate-pulse" style="z-index: ${zAura}; top:-40%; left:-40%;">` : '';
+                        let auraHtml = p.aura > 0 ? `<img src="personnage/aura/aura${p.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura};">` : '';
                         let badge = p.is_member ? `<div class="absolute -bottom-2 -right-2 bg-yellow-400 text-black text-[12px] font-black w-6 h-6 flex items-center justify-center rounded-full border-2 border-white z-40 shadow-lg" title="Joueur VIP">★</div>` : '';
 
+                        // Le bloc est maintenant stable, sans animation de rebond
                         list.innerHTML += `
-                            <div class="bg-white text-indigo-900 p-4 rounded-2xl font-bold text-center shadow-lg transform transition hover:-translate-y-2 animate-bounce flex flex-col items-center">
+                            <div class="bg-white text-indigo-900 p-4 rounded-2xl font-bold text-center shadow-lg transform transition hover:-translate-y-2 flex flex-col items-center">
                                 <div class="relative w-20 h-20 bg-gray-100 rounded-full shadow-inner overflow-visible border-2 border-indigo-200 mb-3 flex items-end justify-center">
                                     ${auraHtml}
                                     <div class="relative w-full h-full overflow-hidden rounded-full flex items-end justify-center">

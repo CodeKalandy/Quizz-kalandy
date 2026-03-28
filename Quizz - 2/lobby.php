@@ -3,9 +3,6 @@ require_once 'db.php';
 $pin = $_GET['pin'] ?? '';
 $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
 $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
-
-// On définit les limites dynamiquement selon le statut VIP
-$limit_items = ($is_member === 'true') ? 10 : 5;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -19,7 +16,6 @@ $limit_items = ($is_member === 'true') ? 10 : 5;
             width: 120px; height: 120px; position: relative; 
             margin: 0 auto 20px; background: #f3f4f6; border-radius: 20px; overflow: visible;
         }
-        .preview-container img.base { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -47,7 +43,7 @@ $limit_items = ($is_member === 'true') ? 10 : 5;
             <div>
                 <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Coupe de cheveux</p>
                 <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
-                    <?php for($i=1; $i<=$limit_items; $i++): ?>
+                    <?php for($i=1; $i<=10; $i++): ?>
                         <div onclick="setHair(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
                             <img src="personnage/cheveux/cheveux<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
                         </div>
@@ -58,7 +54,7 @@ $limit_items = ($is_member === 'true') ? 10 : 5;
             <div>
                 <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Style vestimentaire</p>
                 <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
-                    <?php for($i=1; $i<=$limit_items; $i++): ?>
+                    <?php for($i=1; $i<=10; $i++): ?>
                         <div onclick="setOutfit(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
                             <img src="personnage/tenue/tenue<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
                         </div>
@@ -67,27 +63,15 @@ $limit_items = ($is_member === 'true') ? 10 : 5;
             </div>
 
             <div>
-                <div class="flex justify-between items-center mb-2">
-                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Aura magique</p>
-                    <?php if($is_member === 'true'): ?>
-                        <span class="text-[10px] font-black text-yellow-500 uppercase bg-yellow-100 px-2 py-0.5 rounded">VIP</span>
-                    <?php endif; ?>
+                <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Aura magique</p>
+                <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
+                    <div onclick="setAura(0)" class="flex-shrink-0 w-14 h-14 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer font-bold text-gray-400">Ø</div>
+                    <?php for($i=1; $i<=5; $i++): ?>
+                        <div onclick="setAura(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
+                            <img src="personnage/aura/aura<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
+                        </div>
+                    <?php endfor; ?>
                 </div>
-                
-                <?php if($is_member === 'true'): ?>
-                    <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
-                        <div onclick="setAura(0)" class="flex-shrink-0 w-14 h-14 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer font-bold text-gray-400">Ø</div>
-                        <?php for($i=1; $i<=5; $i++): ?>
-                            <div onclick="setAura(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
-                                <img src="personnage/aura/aura<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
-                            </div>
-                        <?php endfor; ?>
-                    </div>
-                <?php else: ?>
-                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-center">
-                        <p class="text-[11px] text-indigo-800 font-bold uppercase">⭐ Connecte-toi pour débloquer les auras et plus d'objets !</p>
-                    </div>
-                <?php endif; ?>
             </div>
 
             <button onclick="join()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg transform active:scale-95 transition-all uppercase tracking-widest">
@@ -114,7 +98,8 @@ $limit_items = ($is_member === 'true') ? 10 : 5;
                 cont.innerHTML = '';
             } else {
                 let zIndex = (id == 1 || id == 5) ? 30 : 5;
-                cont.innerHTML = `<img src="personnage/aura/aura${id}.png" class="absolute w-[180%] h-[180%] object-contain animate-pulse" style="z-index: ${zIndex}; top:-40%; left:-40%;">`;
+                // CORRECTION CENTRAGE AURA
+                cont.innerHTML = `<img src="personnage/aura/aura${id}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zIndex};">`;
             }
         }
 

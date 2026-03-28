@@ -11,14 +11,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Écran Hôte - Bernard Quizz</title>
     <style>
-        @keyframes fallBounce {
-            0% { transform: translateY(-100vh); opacity: 0; }
-            60% { transform: translateY(0); opacity: 1; }
-            80% { transform: translateY(-20px); }
-            100% { transform: translateY(0); opacity: 1; }
-        }
-        .animate-fall-bounce { animation: fallBounce 1s cubic-bezier(0.28, 0.84, 0.42, 1) forwards; }
-        
         @keyframes popIn {
             0% { transform: scale(0.5); opacity: 0; }
             80% { transform: scale(1.1); opacity: 1; }
@@ -26,8 +18,8 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
         }
         .animate-pop-in { animation: popIn 0.8s ease-out forwards; }
         
-        .silhouette { filter: brightness(0) contrast(100%); transition: filter 2s ease-in-out; }
-        .revealed { filter: brightness(1) contrast(100%); }
+        .silhouette { filter: brightness(0); transition: filter 3s ease-in-out; }
+        .revealed { filter: brightness(1); }
     </style>
 </head>
 <body class="bg-indigo-900 text-white flex flex-col h-screen overflow-hidden font-sans relative">
@@ -71,7 +63,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
         let transitionTimeout;
         let timeLeft = 0;
         let correctAns = 1;
-        let podiumAnimated = false; // Empêche de relancer l'animation du podium à chaque tick
+        let podiumAnimated = false; 
 
         function sync() {
             fetch(`api_live.php?action=get_state&pin=<?= htmlspecialchars($pin) ?>`)
@@ -106,17 +98,24 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 btnNext.classList.add('hidden');
                 document.getElementById('q-title').innerText = data.question.question_text;
                 document.getElementById('q-title').classList.remove('hidden');
-                if (data.question.image_url) {
+                
+                if (data.question.image_url && data.question.image_url.trim() !== '') {
                     document.getElementById('q-img').src = data.question.image_url;
                     document.getElementById('q-img').classList.remove('hidden');
+                } else {
+                    document.getElementById('q-img').src = '';
                 }
+                
                 transitionTimeout = setTimeout(() => { fetch(`api_live.php?action=activate_playing&pin=<?= htmlspecialchars($pin) ?>`).then(sync); }, 2000);
             } 
             else if (data.status === 'playing') {
                 btnNext.classList.add('hidden');
                 document.getElementById('q-title').innerText = data.question.question_text;
                 document.getElementById('q-title').classList.remove('hidden');
-                if (data.question.image_url) document.getElementById('q-img').classList.remove('hidden');
+                
+                if (data.question.image_url && data.question.image_url.trim() !== '') {
+                    document.getElementById('q-img').classList.remove('hidden');
+                }
                 
                 for(let i=1; i<=4; i++) document.querySelector(`#ans${i} .text`).innerText = data.question[`opt${i}`];
                 document.getElementById('q-answers').classList.remove('hidden');
@@ -142,15 +141,9 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 btnNext.innerText = "Question suivante";
                 btnNext.onclick = () => fetch(`api_live.php?action=next_step&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
                 
-                document.getElementById('q-title').classList.remove('hidden');
-                document.getElementById('q-answers').classList.remove('hidden');
                 document.getElementById('leaderboard').classList.remove('hidden');
                 document.getElementById('leaderboard-title').innerText = "📊 CLASSEMENT PROVISOIRE 📊";
                 
-                for(let i=1; i<=4; i++) {
-                    if (i != correctAns) document.getElementById(`ans${i}`).classList.add('opacity-20');
-                    else document.getElementById(`ans${i}`).classList.add('scale-105', 'border-8', 'border-white', 'z-10');
-                }
                 renderLeaderboard(data);
             } 
             else if (data.status === 'finished') {
@@ -167,7 +160,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             }
         }
 
-        // --- AFFICHAGE CLASSEMENT CLASSIQUE (TOP 5) ---
         function renderLeaderboard(data) {
             let sortedPlayers = [...data.players].sort((a, b) => (data.scores[b.nickname] || 0) - (data.scores[a.nickname] || 0));
             let html = `<div class="flex flex-wrap justify-center gap-6 mt-20">`;
@@ -175,7 +167,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             sortedPlayers.slice(0, 5).forEach((p, index) => {
                 let badge = p.is_member ? `<div class="absolute -bottom-2 -right-2 bg-yellow-400 text-black text-[12px] font-black w-6 h-6 flex items-center justify-center rounded-full border-2 border-white z-40 shadow-lg">★</div>` : '';
                 let zAura = (p.aura == 1 || p.aura == 5) ? 30 : 5;
-                let auraHtml = p.aura > 0 ? `<img src="personnage/aura/aura${p.aura}.png" class="absolute w-[180%] h-[180%] object-contain animate-pulse" style="z-index: ${zAura}; top:-40%; left:-40%;">` : '';
+                let auraHtml = p.aura > 0 ? `<img src="personnage/aura/aura${p.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura};">` : '';
                 
                 html += `
                     <div class="flex flex-col items-center">
@@ -195,19 +187,18 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             document.getElementById('players-list').innerHTML = html + `</div>`;
         }
 
-        // --- ANIMATION DU PODIUM FINAL ---
         function renderPodium(data) {
             let sortedPlayers = [...data.players].sort((a, b) => (data.scores[b.nickname] || 0) - (data.scores[a.nickname] || 0));
             let html = `<div class="relative w-full h-full flex flex-col items-center justify-end">`;
             
-            // 4ème place et + (Tombent du ciel en arrière-plan)
+            // 4ème place et + (Apparaissent doucement, sans rebond)
             html += `<div class="absolute bottom-0 w-full flex justify-center gap-4 flex-wrap px-10 mb-2 z-0">`;
             for(let i = 3; i < sortedPlayers.length; i++) {
                 let p = sortedPlayers[i];
-                let delay = Math.random() * 0.5; // Délai aléatoire pour la chute
+                let delay = Math.random() * 0.5; 
                 let badge = p.is_member ? `<div class="absolute -bottom-1 -right-1 bg-yellow-400 text-black text-[10px] font-black w-4 h-4 flex items-center justify-center rounded-full border border-white z-40">★</div>` : '';
                 html += `
-                <div class="opacity-0 animate-fall-bounce flex flex-col items-center" style="animation-delay: ${delay}s">
+                <div class="opacity-0 animate-pop-in flex flex-col items-center" style="animation-delay: ${delay}s">
                     <div class="relative w-16 h-16 bg-white bg-opacity-10 rounded-full border-2 border-indigo-400 overflow-visible flex items-end justify-center">
                         <div class="relative w-full h-full overflow-hidden rounded-full flex items-end justify-center">
                             <img src="personnage/tenue/tenue${p.outfit}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index:10;">
@@ -220,68 +211,61 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             }
             html += `</div>`;
 
-            // Blocs du Podium (Top 3)
+            // Blocs du Podium
             html += `<div class="flex items-end justify-center gap-4 md:gap-8 z-10 w-full max-w-4xl mx-auto h-[400px]">`;
 
-            // Fonction pour générer le code d'un gagnant
             const getWinnerHtml = (p, id, place, medal, heightClass, bgClass, colorClass, borderClass) => {
                 if(!p) return `<div class="w-32 md:w-48"></div>`;
                 let zAura = (p.aura == 1 || p.aura == 5) ? 30 : 5;
-                let auraHtml = p.aura > 0 ? `<img src="personnage/aura/aura${p.aura}.png" class="absolute w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura}; top:-50%; left:-50%;">` : '';
+                let auraHtml = p.aura > 0 ? `<img src="personnage/aura/aura${p.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura};">` : '';
                 let badge = p.is_member ? `<div class="absolute bottom-2 right-2 bg-yellow-400 text-black text-[14px] font-black w-8 h-8 flex items-center justify-center rounded-full border-2 border-white z-40 shadow-lg">★</div>` : '';
-                let silhouetteClass = place === 1 ? 'silhouette' : ''; // Seul le 1er est sombre au début
+                
+                let silhouetteClass = place === 1 ? 'silhouette' : ''; 
 
                 return `
                 <div id="${id}" class="opacity-0 flex flex-col items-center">
                     <span class="text-4xl md:text-6xl mb-4 ${place === 1 ? 'animate-bounce' : ''}">${medal}</span>
-                    <div id="${place === 1 ? 'winner-avatar' : ''}" class="relative w-32 h-32 md:w-48 md:h-48 flex items-end justify-center mb-[-20px] ${silhouetteClass}">
-                        ${auraHtml}
-                        <img src="personnage/tenue/tenue${p.outfit}.png" class="absolute w-full h-full object-contain bottom-0" style="z-index: 10;">
-                        <img src="personnage/cheveux/cheveux${p.hair}.png" class="absolute w-full h-full object-contain bottom-0" style="z-index: 20;">
-                        ${badge}
-                    </div>
-                    <div class="${bgClass} w-36 md:w-56 ${heightClass} flex flex-col items-center justify-start pt-6 rounded-t-2xl border-4 ${borderClass} shadow-2xl relative z-20">
-                        <span class="font-black ${colorClass} text-xl md:text-2xl text-center px-2 truncate w-full">${p.nickname}</span>
-                        <span class="font-bold text-black opacity-60 text-lg md:text-xl">${data.scores[p.nickname]||0} pts</span>
+                    <div id="${place === 1 ? 'winner-block' : ''}" class="flex flex-col items-center ${silhouetteClass} transition-all duration-[3000ms]">
+                        <div class="relative w-32 h-32 md:w-48 md:h-48 flex items-end justify-center mb-[-20px]">
+                            ${auraHtml}
+                            <img src="personnage/tenue/tenue${p.outfit}.png" class="absolute w-full h-full object-contain bottom-0" style="z-index: 10;">
+                            <img src="personnage/cheveux/cheveux${p.hair}.png" class="absolute w-full h-full object-contain bottom-0" style="z-index: 20;">
+                            ${badge}
+                        </div>
+                        <div class="${bgClass} w-36 md:w-56 ${heightClass} flex flex-col items-center justify-start pt-6 rounded-t-2xl border-4 ${borderClass} shadow-2xl relative z-20">
+                            <span class="font-black ${colorClass} text-xl md:text-2xl text-center px-2 truncate w-full">${p.nickname}</span>
+                            <span class="font-bold text-black opacity-60 text-lg md:text-xl">${data.scores[p.nickname]||0} pts</span>
+                        </div>
                     </div>
                 </div>`;
             };
 
-            // 2ème (À gauche)
             html += getWinnerHtml(sortedPlayers[1], 'podium-2', 2, '🥈', 'h-40', 'bg-gray-300', 'text-gray-800', 'border-gray-400');
-            // 1er (Au centre)
             html += getWinnerHtml(sortedPlayers[0], 'podium-1', 1, '🥇', 'h-56', 'bg-yellow-400', 'text-yellow-900', 'border-yellow-500');
-            // 3ème (À droite)
             html += getWinnerHtml(sortedPlayers[2], 'podium-3', 3, '🥉', 'h-28', 'bg-orange-400', 'text-orange-900', 'border-orange-500');
 
             html += `</div></div>`;
             document.getElementById('players-list').innerHTML = html;
 
-            // --- ORCHESTRATION DES APPARITIONS ---
-            // 1. Les perdants tombent immédiatement (0s)
-            // 2. Le 3ème apparait (2.5s)
             setTimeout(() => { 
                 let p3 = document.getElementById('podium-3'); 
                 if(p3) { p3.classList.remove('opacity-0'); p3.classList.add('animate-pop-in'); }
-            }, 2500);
+            }, 4000);
             
-            // 3. Le 2ème apparait (4.5s)
             setTimeout(() => { 
                 let p2 = document.getElementById('podium-2'); 
                 if(p2) { p2.classList.remove('opacity-0'); p2.classList.add('animate-pop-in'); }
-            }, 4500);
+            }, 8000);
             
-            // 4. Le 1er apparait en sombre (6.5s)
             setTimeout(() => { 
                 let p1 = document.getElementById('podium-1'); 
                 if(p1) { p1.classList.remove('opacity-0'); p1.classList.add('animate-pop-in'); }
-            }, 6500);
+            }, 12000);
             
-            // 5. La lumière s'allume sur le 1er ! (9s)
             setTimeout(() => { 
-                let winner = document.getElementById('winner-avatar'); 
+                let winner = document.getElementById('winner-block'); 
                 if(winner) { winner.classList.remove('silhouette'); winner.classList.add('revealed'); }
-            }, 9000);
+            }, 16000);
         }
 
         setInterval(sync, 1500);
