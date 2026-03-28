@@ -17,7 +17,7 @@ if (file_exists($gameStateFile)) {
         'eliminated' => [],
         'players' => [], 
         'scores' => new stdClass(), 
-        'correct_counts' => new stdClass(), // NOUVEAU : Compteur de bonnes réponses pour la session
+        'correct_counts' => new stdClass(), 
         'answers' => new stdClass(), 
         'status' => 'lobby', 
         'current_q_index' => -1, 
@@ -42,7 +42,6 @@ switch ($action) {
             $scoresArr[$nick] = 0;
             $state['scores'] = (object)$scoresArr;
             
-            // Initialiser le compteur de bonnes réponses à 0
             $correctCounts = (array)($state['correct_counts'] ?? []);
             $correctCounts[$nick] = 0;
             $state['correct_counts'] = (object)$correctCounts;
@@ -61,7 +60,7 @@ switch ($action) {
         $state['question'] = $qs[0];
         $state['answers'] = new stdClass();
         $state['eliminated'] = [];
-        $state['correct_counts'] = new stdClass(); // Reset du compteur
+        $state['correct_counts'] = new stdClass(); 
         break;
 
     case 'activate_playing':
@@ -89,17 +88,14 @@ switch ($action) {
             $isCorrect = filter_var($input['is_correct'], FILTER_VALIDATE_BOOLEAN);
             
             if ($isCorrect) {
-                // Maj BDD globale
                 $pdo->prepare("UPDATE users SET total_correct = total_correct + 1 WHERE username = ?")->execute([$nick]);
                 
-                // Maj Score Session
                 $timeTaken = (float)($input['response_time'] ?? 0);
                 $pts = max(500, 1000 - (int)($timeTaken * 50));
                 $scoresArr = (array)$state['scores'];
                 $scoresArr[$nick] = ($scoresArr[$nick] ?? 0) + $pts;
                 $state['scores'] = (object)$scoresArr;
                 
-                // NOUVEAU : Maj Compteur bonnes réponses Session
                 $correctCounts = (array)($state['correct_counts'] ?? []);
                 $correctCounts[$nick] = ($correctCounts[$nick] ?? 0) + 1;
                 $state['correct_counts'] = (object)$correctCounts;
@@ -108,6 +104,24 @@ switch ($action) {
                 $pdo->prepare("UPDATE users SET total_wrong = total_wrong + 1 WHERE username = ?")->execute([$nick]);
             }
         }
+        break;
+
+    // NOUVELLE ÉTAPE : Révéler la bonne réponse avant le classement
+    case 'show_answer':
+        $state['status'] = 'show_answer';
+        $qIdx = (int)$state['current_q_index'];
+        
+        $allAnswers = (array)($state['answers'] ?? []);
+        $currentQAnswers = (array)($allAnswers[$qIdx] ?? []);
+        
+        // On compte combien de joueurs ont voté pour chaque réponse (0, 1, 2, 3)
+        $counts = [0 => 0, 1 => 0, 2 => 0, 3 => 0];
+        foreach($currentQAnswers as $nick => $ansIndex) {
+            if(isset($counts[$ansIndex])) {
+                $counts[$ansIndex]++;
+            }
+        }
+        $state['answer_counts'] = $counts;
         break;
 
     case 'show_leaderboard':

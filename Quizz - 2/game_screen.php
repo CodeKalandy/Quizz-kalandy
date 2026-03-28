@@ -23,30 +23,30 @@
         </div>
     </div>
 
-    <div id="q-container" class="hidden px-4 mt-4 mb-2 z-0 w-full max-w-sm mx-auto text-center">
-        <h2 id="q-text" class="text-xl md:text-2xl font-black text-white drop-shadow-md"></h2>
+    <div id="q-container" class="hidden px-4 mt-8 mb-6 z-0 w-full max-w-4xl mx-auto text-center">
+        <h2 id="q-text" class="text-2xl md:text-4xl font-black text-white drop-shadow-md leading-tight"></h2>
     </div>
 
     <div id="msg" class="flex-grow flex flex-col items-center justify-center text-3xl font-black text-center italic uppercase p-6 animate-pulse z-0">
         Chargement...
     </div>
     
-    <div id="grid" class="hidden grid-cols-1 gap-3 h-[70%] pb-6 px-4 w-full max-w-sm mx-auto z-0 overflow-y-auto">
-        <button onclick="submitAns(1)" class="bg-red-500 rounded-3xl p-4 text-white font-bold shadow-[0_8px_0_0_#991b1b] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
-            <span class="text-4xl drop-shadow-md mr-4">▲</span>
-            <span id="opt1-text" class="text-lg leading-tight flex-grow drop-shadow-sm"></span>
+    <div id="grid" class="hidden grid-cols-1 md:grid-cols-2 gap-4 h-[70%] pb-6 px-4 w-full max-w-4xl mx-auto z-0 overflow-y-auto">
+        <button onclick="submitAns(1)" class="bg-red-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#991b1b] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
+            <span class="text-5xl md:text-6xl drop-shadow-md mr-6">▲</span>
+            <span id="opt1-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
         </button>
-        <button onclick="submitAns(2)" class="bg-blue-500 rounded-3xl p-4 text-white font-bold shadow-[0_8px_0_0_#1e40af] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
-            <span class="text-4xl drop-shadow-md mr-4">◆</span>
-            <span id="opt2-text" class="text-lg leading-tight flex-grow drop-shadow-sm"></span>
+        <button onclick="submitAns(2)" class="bg-blue-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#1e40af] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
+            <span class="text-5xl md:text-6xl drop-shadow-md mr-6">◆</span>
+            <span id="opt2-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
         </button>
-        <button onclick="submitAns(3)" class="bg-yellow-500 rounded-3xl p-4 text-white font-bold shadow-[0_8px_0_0_#854d0e] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
-            <span class="text-4xl drop-shadow-md mr-4">●</span>
-            <span id="opt3-text" class="text-lg leading-tight flex-grow drop-shadow-sm"></span>
+        <button onclick="submitAns(3)" class="bg-yellow-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#854d0e] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
+            <span class="text-5xl md:text-6xl drop-shadow-md mr-6">●</span>
+            <span id="opt3-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
         </button>
-        <button onclick="submitAns(4)" class="bg-green-500 rounded-3xl p-4 text-white font-bold shadow-[0_8px_0_0_#166534] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
-            <span class="text-4xl drop-shadow-md mr-4">■</span>
-            <span id="opt4-text" class="text-lg leading-tight flex-grow drop-shadow-sm"></span>
+        <button onclick="submitAns(4)" class="bg-green-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#166534] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
+            <span class="text-5xl md:text-6xl drop-shadow-md mr-6">■</span>
+            <span id="opt4-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
         </button>
     </div>
 
@@ -94,7 +94,7 @@
                 if (data.eliminated && data.eliminated.includes(nick)) {
                     document.getElementById('q-container').classList.add('hidden');
                     document.getElementById('grid').classList.add('hidden');
-                    document.getElementById('grid').classList.remove('grid');
+                    document.getElementById('grid').classList.remove('grid', 'md:grid-cols-2');
                     document.getElementById('msg').classList.remove('hidden');
                     document.getElementById('msg').innerHTML = "<span class='text-red-500 text-5xl'>ÉLIMINÉ 💀</span><br><span class='text-sm mt-4 block text-gray-400 normal-case'>Regarde la fin sur l'écran principal</span>";
                     return;
@@ -109,7 +109,7 @@
                     }
                     document.getElementById('q-container').classList.add('hidden');
                     document.getElementById('grid').classList.add('hidden');
-                    document.getElementById('grid').classList.remove('grid');
+                    document.getElementById('grid').classList.remove('grid', 'md:grid-cols-2');
                     document.getElementById('msg').classList.remove('hidden');
                     document.getElementById('msg').innerText = "PRÉPAREZ-VOUS !";
                 } 
@@ -124,27 +124,35 @@
                         document.getElementById('q-container').classList.remove('hidden');
                         document.getElementById('msg').classList.add('hidden');
                         document.getElementById('grid').classList.remove('hidden');
-                        document.getElementById('grid').classList.add('grid');
+                        document.getElementById('grid').classList.add('grid', 'md:grid-cols-2');
                         if (startTime === 0) startTime = Date.now();
                     }
-                } 
+                }
+                // GESTION DU NOUVEL ÉTAT SHOW_ANSWER SUR LE MOBILE 
+                else if (data.status === 'show_answer') {
+                    document.getElementById('q-container').classList.add('hidden');
+                    document.getElementById('grid').classList.add('hidden');
+                    document.getElementById('grid').classList.remove('grid', 'md:grid-cols-2');
+                    document.getElementById('msg').classList.remove('hidden');
+                    document.getElementById('msg').innerHTML = "FIN DU TEMPS !<br><span class='text-lg font-normal text-yellow-400 mt-2 block normal-case'>Regardez l'écran pour la réponse !</span>";
+                }
                 else if (data.status === 'leaderboard') {
                     const isLast = data.current_q_index === data.questions_list.length - 1;
                     document.getElementById('q-container').classList.add('hidden');
                     document.getElementById('grid').classList.add('hidden');
-                    document.getElementById('grid').classList.remove('grid');
+                    document.getElementById('grid').classList.remove('grid', 'md:grid-cols-2');
                     document.getElementById('msg').classList.remove('hidden');
                     
                     if (isLast) {
                         document.getElementById('msg').innerHTML = "FIN DES QUESTIONS !<br><span class='text-lg font-normal text-yellow-400 mt-2 block normal-case'>Le podium va apparaître...</span>";
                     } else {
-                        document.getElementById('msg').innerHTML = "TEMPS ÉCOULÉ !<br><span class='text-lg font-normal text-yellow-400 mt-2 block normal-case'>Regardez le classement sur l'écran !</span>";
+                        document.getElementById('msg').innerHTML = "CLASSEMENT PROVISOIRE<br><span class='text-lg font-normal text-yellow-400 mt-2 block normal-case'>Regardez l'écran principal !</span>";
                     }
                 }
                 else if (data.status === 'finished') {
                     document.getElementById('q-container').classList.add('hidden');
                     document.getElementById('grid').classList.add('hidden');
-                    document.getElementById('grid').classList.remove('grid');
+                    document.getElementById('grid').classList.remove('grid', 'md:grid-cols-2');
                     document.getElementById('msg').classList.remove('hidden');
                     document.getElementById('msg').innerHTML = "PARTIE TERMINÉE !<br><span class='text-sm font-normal normal-case'>Redirection en cours...</span>";
                     setTimeout(() => { window.location.href = "dashboard.php"; }, 5000);
@@ -172,7 +180,7 @@
             }).then(() => {
                 document.getElementById('q-container').classList.add('hidden');
                 document.getElementById('grid').classList.add('hidden');
-                document.getElementById('grid').classList.remove('grid');
+                document.getElementById('grid').classList.remove('grid', 'md:grid-cols-2');
                 document.getElementById('msg').classList.remove('hidden');
                 document.getElementById('msg').innerText = funnyPhrases[Math.floor(Math.random() * funnyPhrases.length)];
             });
