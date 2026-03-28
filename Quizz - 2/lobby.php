@@ -1,6 +1,12 @@
 <?php
 require_once 'db.php';
 $pin = $_GET['pin'] ?? '';
+
+// Vérification du statut VIP (joueur connecté)
+$is_member = isset($_SESSION['user_id']);
+$default_nick = $is_member ? $_SESSION['username'] : '';
+$max_items = $is_member ? 10 : 5;
+$max_auras = $is_member ? 5 : 0;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -26,7 +32,6 @@ $pin = $_GET['pin'] ?? '';
             height: 100%; 
             object-fit: contain; 
         }
-        /* Scrollbar invisible pour les sélecteurs */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -34,6 +39,12 @@ $pin = $_GET['pin'] ?? '';
 <body class="bg-indigo-600 min-h-screen text-white flex flex-col items-center p-4 font-sans">
 
     <h1 class="text-2xl font-black mb-4 uppercase tracking-widest">Crée ton Bernard</h1>
+
+    <?php if(!$is_member): ?>
+        <div class="mb-4 bg-yellow-400 text-yellow-900 text-xs font-bold px-4 py-2 rounded-full shadow-lg">
+            ⭐ Connectez-vous pour débloquer tous les styles et les auras !
+        </div>
+    <?php endif; ?>
 
     <div class="bg-white text-gray-800 p-6 rounded-3xl shadow-2xl w-full max-w-md">
         
@@ -44,13 +55,13 @@ $pin = $_GET['pin'] ?? '';
         </div>
 
         <div class="space-y-5">
-            <input type="text" id="nick" maxlength="12" placeholder="TON PSEUDO" 
-                   class="w-full p-4 bg-gray-100 border-none rounded-2xl font-black text-center text-indigo-600 focus:ring-4 focus:ring-indigo-200 outline-none transition-all">
+            <input type="text" id="nick" maxlength="12" placeholder="TON PSEUDO" value="<?= htmlspecialchars($default_nick) ?>" <?= $is_member ? 'readonly' : '' ?>
+                   class="w-full p-4 bg-gray-100 border-none rounded-2xl font-black text-center text-indigo-600 focus:ring-4 focus:ring-indigo-200 outline-none transition-all <?= $is_member ? 'opacity-70 cursor-not-allowed' : '' ?>">
 
             <div>
                 <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Coupe de cheveux</p>
                 <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
-                    <?php for($i=1; $i<=10; $i++): ?>
+                    <?php for($i=1; $i<=$max_items; $i++): ?>
                         <div onclick="setHair(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
                             <img src="personnage/cheveux/cheveux<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
                         </div>
@@ -61,7 +72,7 @@ $pin = $_GET['pin'] ?? '';
             <div>
                 <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Style vestimentaire</p>
                 <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
-                    <?php for($i=1; $i<=10; $i++): ?>
+                    <?php for($i=1; $i<=$max_items; $i++): ?>
                         <div onclick="setOutfit(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
                             <img src="personnage/tenue/tenue<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
                         </div>
@@ -69,17 +80,19 @@ $pin = $_GET['pin'] ?? '';
                 </div>
             </div>
 
+            <?php if($is_member): ?>
             <div>
-                <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Aura magique</p>
+                <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Aura magique (VIP)</p>
                 <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
                     <div onclick="setAura(0)" class="flex-shrink-0 w-14 h-14 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer font-bold text-gray-400">Ø</div>
-                    <?php for($i=1; $i<=10; $i++): ?>
+                    <?php for($i=1; $i<=$max_auras; $i++): ?>
                         <div onclick="setAura(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
                             <img src="personnage/aura/aura<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
                         </div>
                     <?php endfor; ?>
                 </div>
             </div>
+            <?php endif; ?>
 
             <button onclick="join()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg transform active:scale-95 transition-all uppercase tracking-widest">
                 C'est parti !
@@ -108,7 +121,7 @@ $pin = $_GET['pin'] ?? '';
             const nick = document.getElementById('nick').value.trim();
             if(!nick) return alert("Hé ! Il nous faut ton pseudo !");
 
-            fetch(`api_live.php?action=join&pin=<?= $pin ?>`, {
+            fetch(`api_live.php?action=join&pin=<?= htmlspecialchars($pin) ?>`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -116,15 +129,14 @@ $pin = $_GET['pin'] ?? '';
                     hair: hair, 
                     outfit: outfit, 
                     aura: aura, 
-                    is_member: false 
+                    is_member: <?= $is_member ? 'true' : 'false' ?>
                 })
             })
             .then(r => r.json())
             .then(data => {
                 if(data.status === 'success') {
-                    // CORRECTION ICI : Redirection vers game_screen.php et stockage du pseudo
                     localStorage.setItem('quiz_nickname', nick);
-                    window.location.href = `game_screen.php?pin=<?= $pin ?>&nick=${encodeURIComponent(nick)}`;
+                    window.location.href = `game_screen.php?pin=<?= htmlspecialchars($pin) ?>&nick=${encodeURIComponent(nick)}`;
                 }
             });
         }

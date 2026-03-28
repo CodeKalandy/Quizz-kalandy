@@ -1,211 +1,225 @@
+<?php
+require_once 'db.php';
+$pin = $_GET['pin'] ?? '';
+if (!$pin) { header("Location: dashboard.php"); exit; }
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8"><script src="https://cdn.tailwindcss.com"></script>
-    <title>Bernard Quizz - Master Live</title>
-    <style>
-        .zoom-question { animation: zoomIn 3s ease-out forwards; }
-        @keyframes zoomIn { from { transform: scale(0.2); opacity: 0; } to { transform: scale(1.4); opacity: 1; } }
-        @keyframes physicsFall { 0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(120vh) rotate(20deg); opacity: 0; } }
-        .falling-player { animation: physicsFall 2s ease-in forwards; position: absolute; top: 0; z-index: 50; }
-        .podium-step { transition: all 1s ease-out; opacity: 0; transform: translateY(100px); }
-        .podium-visible { opacity: 1; transform: translateY(0); }
-        .winner-dark { filter: brightness(0); transition: filter 1.5s ease-in-out; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Écran Hôte - Bernard Quizz</title>
 </head>
-<body class="bg-indigo-700 min-h-screen text-white font-sans overflow-hidden">
+<body class="bg-indigo-900 text-white flex flex-col h-screen overflow-hidden font-sans relative">
 
-    <div id="reveal-ui" class="hidden h-screen flex items-center justify-center p-10 bg-indigo-900">
-        <h1 id="reveal-text" class="text-6xl font-black italic text-center zoom-question text-yellow-400 drop-shadow-lg"></h1>
+    <div class="flex justify-between items-center p-6 bg-black bg-opacity-40 shadow-md z-10">
+        <div>
+            <span class="text-xs font-black text-gray-400 uppercase tracking-widest">CODE PIN DU SALON</span>
+            <h1 class="text-5xl font-black text-yellow-400 tracking-widest drop-shadow-lg"><?= htmlspecialchars($pin) ?></h1>
+        </div>
+        <button onclick="nextStep()" id="btn-next" class="bg-indigo-500 hover:bg-indigo-400 px-8 py-4 rounded-2xl font-black text-xl uppercase transition shadow-[0_4px_14px_0_rgba(99,102,241,0.39)] transform hover:scale-105">
+            Initialisation...
+        </button>
     </div>
 
-    <div id="question-ui" class="hidden flex flex-col h-screen">
-        <div class="bg-white text-gray-900 p-4 text-center shadow-xl z-20"><h1 id="q-text" class="text-3xl font-black italic text-indigo-800"></h1></div>
-        <div class="flex-grow flex flex-col items-center justify-center relative p-4 bg-black bg-opacity-10">
-            <div id="img-box" class="hidden mb-4 p-2 bg-white rounded-xl shadow-2xl"><img id="q-img" src="" class="max-h-56 rounded-lg object-contain"></div>
-            <div id="classroom" class="flex flex-wrap justify-center gap-4 max-w-5xl"></div>
-        </div>
-        <div class="flex items-center justify-around py-4 bg-indigo-900 border-t border-indigo-500 z-20">
-            <div id="timer" class="text-6xl font-black bg-white text-indigo-700 w-28 h-28 rounded-full flex items-center justify-center border-4 border-indigo-300 shadow-2xl">0</div>
-            <div class="text-center"><p id="ans-count" class="text-7xl font-black text-yellow-400">0</p><p class="text-sm font-bold opacity-70 uppercase tracking-widest">Réponses</p></div>
-        </div>
-        <div class="grid grid-cols-2 gap-2 p-2 h-1/4">
-            <div class="bg-red-500 rounded-xl p-4 text-2xl font-bold flex items-center shadow-lg">▲ <span id="opt1" class="ml-4"></span></div>
-            <div class="bg-blue-500 rounded-xl p-4 text-2xl font-bold flex items-center shadow-lg">◆ <span id="opt2" class="ml-4"></span></div>
-            <div class="bg-yellow-500 rounded-xl p-4 text-2xl font-bold flex items-center shadow-lg">● <span id="opt3" class="ml-4"></span></div>
-            <div class="bg-green-500 rounded-xl p-4 text-2xl font-bold flex items-center shadow-lg">■ <span id="opt4" class="ml-4"></span></div>
-        </div>
-    </div>
-
-    <div id="leaderboard-ui" class="h-screen hidden flex flex-col items-center justify-center bg-indigo-900 p-10 relative">
-        <div id="falling-zone" class="absolute inset-0 pointer-events-none"></div>
-        <h1 id="l-title" class="text-6xl font-black text-yellow-400 mb-8 italic uppercase drop-shadow-md">Classement</h1>
-        <div id="score-list" class="w-full max-w-xl space-y-3 z-10"></div>
+    <div class="flex-grow flex flex-col items-center justify-center p-6 relative z-0">
         
-        <div id="final-podium" class="hidden w-full flex justify-center items-end gap-6 mt-10">
-            <div id="rank-2" class="podium-step flex flex-col items-center"><div id="av-2" class="mb-2"></div><div class="bg-gray-400 w-32 h-40 rounded-t-xl flex items-center justify-center font-black text-5xl text-gray-700 shadow-2xl">2</div></div>
-            <div id="rank-1" class="podium-step flex flex-col items-center"><div id="av-1" class="mb-2 winner-dark"></div><div class="bg-yellow-400 w-40 h-56 rounded-t-xl flex items-center justify-center font-black text-7xl text-yellow-700 shadow-2xl border-t-8 border-yellow-200">1</div></div>
-            <div id="rank-3" class="podium-step flex flex-col items-center"><div id="av-3" class="mb-2"></div><div class="bg-orange-600 w-32 h-24 rounded-t-xl flex items-center justify-center font-black text-5xl text-orange-800 shadow-2xl">3</div></div>
+        <h2 id="q-title" class="text-4xl md:text-6xl font-black text-center mb-8 drop-shadow-2xl hidden px-4 leading-tight"></h2>
+        
+        <img id="q-img" src="" class="hidden max-h-72 rounded-3xl shadow-2xl mb-8 object-cover border-8 border-white">
+
+        <div id="q-answers" class="hidden w-full max-w-5xl grid grid-cols-2 gap-6 mb-8">
+            <div id="ans1" class="bg-red-500 p-8 rounded-3xl text-3xl font-bold flex items-center shadow-xl transition-all duration-300"><span class="text-5xl mr-6 drop-shadow-md">▲</span><span class="text drop-shadow-md"></span></div>
+            <div id="ans2" class="bg-blue-500 p-8 rounded-3xl text-3xl font-bold flex items-center shadow-xl transition-all duration-300"><span class="text-5xl mr-6 drop-shadow-md">◆</span><span class="text drop-shadow-md"></span></div>
+            <div id="ans3" class="bg-yellow-500 p-8 rounded-3xl text-3xl font-bold flex items-center shadow-xl transition-all duration-300"><span class="text-5xl mr-6 drop-shadow-md">●</span><span class="text drop-shadow-md"></span></div>
+            <div id="ans4" class="bg-green-500 p-8 rounded-3xl text-3xl font-bold flex items-center shadow-xl transition-all duration-300"><span class="text-5xl mr-6 drop-shadow-md">■</span><span class="text drop-shadow-md"></span></div>
         </div>
 
-        <div class="flex gap-4 mt-12 z-20">
-            <button id="next-btn" onclick="nextStep()" class="bg-green-500 text-white px-14 py-5 rounded-full font-black text-2xl shadow-2xl hover:bg-green-400 transition transform hover:scale-105">SUIVANT</button>
-            <a id="home-btn" href="dashboard.php" class="hidden bg-white text-indigo-900 px-14 py-5 rounded-full font-black text-2xl shadow-2xl hover:bg-gray-100 transition">QUITTER</a>
+        <div id="timer-circle" class="hidden text-8xl font-black bg-white text-indigo-900 w-40 h-40 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(255,255,255,0.3)] border-[10px] border-indigo-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+            20
         </div>
+
+        <div id="leaderboard" class="w-full max-w-6xl mt-auto pb-4">
+            <h3 id="leaderboard-title" class="text-2xl font-black text-center mb-6 uppercase text-indigo-300 tracking-widest hidden">Joueurs en lice</h3>
+            <div id="players-list" class="flex flex-wrap justify-center gap-6 md:gap-10"></div>
+        </div>
+
     </div>
 
     <script>
-        const pin = "<?= $_GET['pin'] ?>";
-        let localStatus = ""; 
-        let currentQIdx = -1; 
-        let timerInterval; 
-        let answeredList = [];
+        let currentStatus = '';
+        let timerInterval;
+        let timeLeft = 0;
+        let correctAns = 1;
 
-        function renderAv(p, s="w-16 h-16") {
-            // SÉCURITÉ : Si p n'existe pas, on met des valeurs par défaut
-            if(!p) p = { hair: 1, outfit: 1, aura: 0, is_member: false };
-            
-            // AURA FORCÉE À NE PAS TOURNER (!important en CSS inline)
-            let aura = (p.aura && p.aura > 0) ? `<img src="personnage/aura/aura${p.aura}.png" class="absolute inset-[-15%] w-[130%] h-[130%] object-contain pointer-events-none" style="z-index: 30; transform: none !important; animation: none !important;">` : '';
-            let badge = p.is_member ? `<div class="absolute -bottom-2 -right-2 bg-yellow-400 text-black text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white" style="z-index: 40;">★</div>` : '';
-            
-            return `<div class="relative ${s} mx-auto">
-                <img src="personnage/tenue/tenue${p.outfit}.png" class="absolute inset-0 w-full h-full object-contain" style="z-index: 10;">
-                <img src="personnage/cheveux/cheveux${p.hair}.png" class="absolute inset-0 w-full h-full object-contain" style="z-index: 20;">
-                ${aura}
-                ${badge}
-            </div>`;
+        function sync() {
+            fetch(`api_live.php?action=get_state&pin=<?= htmlspecialchars($pin) ?>`)
+            .then(r => r.json())
+            .then(data => {
+                if(currentStatus !== data.status) {
+                    currentStatus = data.status;
+                    updateUI(data);
+                } else {
+                    // Toujours rafraîchir les joueurs (pour voir les scores monter ou les éliminations)
+                    renderPlayers(data);
+                }
+            });
         }
 
-        function update() {
-            fetch(`api_live.php?action=get_state&pin=${pin}`).then(r => r.json()).then(data => {
-                if (data.status !== localStatus || data.current_q_index !== currentQIdx) {
-                    localStatus = data.status; 
-                    currentQIdx = data.current_q_index;
-                    
-                    if (data.status === 'reveal') showReveal(data);
-                    if (data.status === 'playing') showQuestion(data);
-                    if (data.status === 'leaderboard') showLeaderboard(data);
-                    if (data.status === 'finished') startFinalPodium(data);
+        function updateUI(data) {
+            const qTitle = document.getElementById('q-title');
+            const qImg = document.getElementById('q-img');
+            const qAnswers = document.getElementById('q-answers');
+            const timerEl = document.getElementById('timer-circle');
+            const leaderboardTitle = document.getElementById('leaderboard-title');
+            const btnNext = document.getElementById('btn-next');
+
+            // Réinitialisation des affichages
+            qTitle.classList.add('hidden');
+            qImg.classList.add('hidden');
+            qAnswers.classList.add('hidden');
+            timerEl.classList.add('hidden');
+            leaderboardTitle.classList.add('hidden');
+            
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`ans${i}`).classList.remove('opacity-20', 'scale-105', 'border-8', 'border-white', 'z-10');
+            }
+
+            if (data.status === 'reveal') {
+                btnNext.innerText = "Lancer le chrono";
+                btnNext.classList.replace('bg-indigo-500', 'bg-green-500');
+                
+                qTitle.innerText = data.question.question_text;
+                qTitle.classList.remove('hidden');
+                
+                if (data.question.image_url) {
+                    qImg.src = data.question.image_url;
+                    qImg.classList.remove('hidden');
                 }
                 
-                if (data.status === 'playing') {
-                    const answers = data.answers[data.current_q_index] || {};
-                    const nicks = Object.keys(answers);
-                    document.getElementById('ans-count').innerText = nicks.length;
-                    
-                    const classroom = document.getElementById('classroom');
-                    nicks.forEach(n => {
-                        if(!answeredList.includes(n)) {
-                            // Recherche sécurisée du joueur
-                            const p = data.players.find(x => x.nickname === n) || { nickname: n, hair: 1, outfit: 1, aura: 0, is_member: false };
-                            classroom.innerHTML += `<div class="text-center p-2">${renderAv(p, "w-14 h-14")}<p class="text-[10px] font-bold mt-2 uppercase tracking-wide">${p.nickname}</p></div>`;
-                            answeredList.push(n);
-                        }
-                    });
+                document.querySelector('#ans1 .text').innerText = data.question.opt1;
+                document.querySelector('#ans2 .text').innerText = data.question.opt2;
+                document.querySelector('#ans3 .text').innerText = data.question.opt3;
+                document.querySelector('#ans4 .text').innerText = data.question.opt4;
+                qAnswers.classList.remove('hidden');
+                
+                correctAns = data.question.correct_answer;
+                timeLeft = data.question.timer || 20;
+                timerEl.innerText = timeLeft;
+                
+                renderPlayers(data);
+
+            } else if (data.status === 'playing') {
+                btnNext.innerText = "Passer au classement";
+                btnNext.classList.replace('bg-green-500', 'bg-yellow-500');
+                
+                qTitle.classList.remove('hidden');
+                if (data.question.image_url) qImg.classList.remove('hidden');
+                qAnswers.classList.remove('hidden');
+                timerEl.classList.remove('hidden');
+                
+                clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerEl.innerText = timeLeft;
+                    if(timeLeft <= 3) timerEl.classList.add('text-red-500'); // Passe en rouge à la fin
+                    if(timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        fetch(`api_live.php?action=show_leaderboard&pin=<?= $pin ?>`).then(sync);
+                    }
+                }, 1000);
+                
+                renderPlayers(data);
+
+            } else if (data.status === 'leaderboard') {
+                clearInterval(timerInterval);
+                timerEl.classList.remove('text-red-500');
+                
+                btnNext.innerText = "Question suivante";
+                btnNext.classList.replace('bg-yellow-500', 'bg-indigo-500');
+                
+                qTitle.classList.remove('hidden');
+                qAnswers.classList.remove('hidden');
+                leaderboardTitle.classList.remove('hidden');
+                if (data.mode === 'br') leaderboardTitle.innerText = "⚔️ SURVIVANTS ⚔️";
+                else leaderboardTitle.innerText = "📊 CLASSEMENT PROVISOIRE 📊";
+                
+                // Mettre en valeur la bonne réponse et griser les autres
+                for(let i=1; i<=4; i++) {
+                    if (i != correctAns) {
+                        document.getElementById(`ans${i}`).classList.add('opacity-20');
+                    } else {
+                        document.getElementById(`ans${i}`).classList.add('scale-105', 'border-8', 'border-white', 'z-10');
+                    }
                 }
-            });
-        }
+                
+                renderPlayers(data);
 
-        function showReveal(data) {
-            document.getElementById('question-ui').classList.add('hidden');
-            document.getElementById('leaderboard-ui').classList.add('hidden');
-            document.getElementById('reveal-ui').classList.remove('hidden');
-            document.getElementById('reveal-text').innerText = data.question.question_text;
-            setTimeout(() => { fetch(`api_live.php?action=activate_playing&pin=${pin}`); }, 3000);
-        }
-
-        function showQuestion(data) {
-            document.getElementById('reveal-ui').classList.add('hidden');
-            document.getElementById('question-ui').classList.remove('hidden');
-            document.getElementById('q-text').innerText = data.question.question_text;
-            
-            const imgBox = document.getElementById('img-box');
-            if(data.question.image_url && data.question.image_url.trim() !== "") {
-                document.getElementById('q-img').src = data.question.image_url;
-                imgBox.classList.remove('hidden');
-            } else { imgBox.classList.add('hidden'); }
-
-            document.getElementById('opt1').innerText = data.question.opt1;
-            document.getElementById('opt2').innerText = data.question.opt2;
-            document.getElementById('opt3').innerText = data.question.opt3;
-            document.getElementById('opt4').innerText = data.question.opt4;
-            
-            answeredList = []; 
-            document.getElementById('classroom').innerHTML = "";
-            
-            clearInterval(timerInterval);
-            let timerVal = parseInt(data.question.timer);
-            timerInterval = setInterval(() => {
-                document.getElementById('timer').innerText = timerVal;
-                if (timerVal <= 0) { 
-                    clearInterval(timerInterval); 
-                    fetch(`api_live.php?action=show_leaderboard&pin=${pin}`); 
-                }
-                timerVal--;
-            }, 1000);
-        }
-
-        function showLeaderboard(data) {
-            document.getElementById('question-ui').classList.add('hidden');
-            document.getElementById('leaderboard-ui').classList.remove('hidden');
-            const list = document.getElementById('score-list');
-            list.innerHTML = "";
-            
-            const scores = data.scores || {};
-            Object.entries(scores).sort((a,b) => b[1]-a[1]).slice(0,5).forEach(([nick, pts]) => {
-                const p = data.players.find(x => x.nickname === nick) || { nickname: nick, hair: 1, outfit: 1, aura: 0, is_member: false };
-                list.innerHTML += `<div class="bg-indigo-800 p-4 rounded-2xl flex justify-between items-center border-l-8 border-yellow-400 shadow-md">
-                    <div class="flex items-center gap-6">${renderAv(p, "w-12 h-12")} <span class="font-bold uppercase text-lg tracking-wider">${nick}</span></div>
-                    <span class="text-3xl font-black text-yellow-300">${pts} pts</span></div>`;
-            });
-        }
-
-        function startFinalPodium(data) {
-            document.getElementById('l-title').innerText = "CLASSEMENT FINAL";
-            document.getElementById('score-list').classList.add('hidden');
-            document.getElementById('next-btn').classList.add('hidden');
-            document.getElementById('final-podium').classList.remove('hidden');
-            document.getElementById('home-btn').classList.remove('hidden');
-            
-            const scores = data.scores || {};
-            const sorted = Object.entries(scores).sort((a,b) => b[1]-a[1]);
-            const top3 = sorted.slice(0, 3);
-            const losers = sorted.slice(3);
-
-            losers.forEach((l, i) => {
-                const p = data.players.find(x => x.nickname === l[0]) || { nickname: l[0], hair: 1, outfit: 1, aura: 0, is_member: false };
-                const div = document.createElement('div');
-                div.className = "falling-player"; 
-                div.style.left = (Math.random()*80+10)+"%";
-                div.style.animationDelay = (i * 0.2) + "s";
-                div.innerHTML = renderAv(p, "w-16 h-16");
-                document.getElementById('falling-zone').appendChild(div);
-            });
-
-            if(top3[2]) {
-                const p3 = data.players.find(x => x.nickname === top3[2][0]) || { nickname: top3[2][0], hair: 1, outfit: 1, aura: 0, is_member: false };
-                document.getElementById('av-3').innerHTML = renderAv(p3, "w-24 h-24");
-                setTimeout(() => document.getElementById('rank-3').classList.add('podium-visible'), 1000);
-            }
-            if(top3[1]) {
-                const p2 = data.players.find(x => x.nickname === top3[1][0]) || { nickname: top3[1][0], hair: 1, outfit: 1, aura: 0, is_member: false };
-                document.getElementById('av-2').innerHTML = renderAv(p2, "w-24 h-24");
-                setTimeout(() => document.getElementById('rank-2').classList.add('podium-visible'), 3000);
-            }
-            if(top3[0]) {
-                const p1 = data.players.find(x => x.nickname === top3[0][0]) || { nickname: top3[0][0], hair: 1, outfit: 1, aura: 0, is_member: false };
-                const av1 = document.getElementById('av-1');
-                av1.innerHTML = renderAv(p1, "w-32 h-32");
-                setTimeout(() => {
-                    document.getElementById('rank-1').classList.add('podium-visible');
-                    setTimeout(() => av1.classList.remove('winner-dark'), 1500);
-                }, 6000);
+            } else if (data.status === 'finished') {
+                btnNext.innerText = "Retour au menu";
+                btnNext.classList.replace('bg-indigo-500', 'bg-red-500');
+                btnNext.onclick = () => window.location.href = 'dashboard.php';
+                
+                leaderboardTitle.classList.remove('hidden');
+                leaderboardTitle.innerText = "🏆 PODIUM FINAL 🏆";
+                leaderboardTitle.classList.add('text-yellow-400', 'text-5xl');
+                
+                renderPlayers(data);
             }
         }
 
-        function nextStep() { fetch(`api_live.php?action=next_step&pin=${pin}`); }
-        setInterval(update, 1500);
+        function renderPlayers(data) {
+            const list = document.getElementById('players-list');
+            list.innerHTML = '';
+            
+            // LOGIQUE D'AFFICHAGE DYNAMIQUE : Si pas d'image, les personnages sont énormes
+            let hasImg = data.question && data.question.image_url && data.question.image_url.trim() !== '';
+            let sizeClass = hasImg ? 'w-24 h-24 md:w-28 md:h-28' : 'w-40 h-40 md:w-56 md:h-56'; 
+            let textClass = hasImg ? 'text-sm' : 'text-2xl';
+
+            // Trier les joueurs par score décroissant
+            let sortedPlayers = [...data.players].sort((a, b) => {
+                let scoreA = data.scores[a.nickname] || 0;
+                let scoreB = data.scores[b.nickname] || 0;
+                return scoreB - scoreA;
+            });
+
+            sortedPlayers.forEach(p => {
+                // LOGIQUE BATTLE ROYALE : Griser les éliminés
+                let isEliminated = data.eliminated && data.eliminated.includes(p.nickname);
+                let elimClass = isEliminated ? 'grayscale opacity-30' : '';
+                let cross = isEliminated ? `<div class="absolute inset-0 flex items-center justify-center text-red-600 font-black text-7xl md:text-9xl drop-shadow-2xl z-50">X</div>` : '';
+                let score = data.scores[p.nickname] || 0;
+
+                let html = `
+                    <div class="flex flex-col items-center transition-all duration-700 transform ${isEliminated ? 'scale-75' : 'hover:-translate-y-4'}">
+                        <div class="relative ${sizeClass} ${elimClass} bg-white bg-opacity-10 rounded-full shadow-inner overflow-hidden mb-3 flex items-end justify-center border-4 border-indigo-400">
+                            <img src="personnage/tenue/tenue${p.outfit}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;">
+                            <img src="personnage/cheveux/cheveux${p.hair}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;">
+                            ${p.aura > 0 ? `<img src="personnage/aura/aura${p.aura}.png" class="absolute w-[180%] h-[180%] object-contain animate-pulse" style="z-index: 30; top:-40%; left:-40%;">` : ''}
+                            ${cross}
+                        </div>
+                        <span class="font-black bg-white text-indigo-900 px-4 py-1 rounded-full shadow-lg ${textClass} uppercase tracking-tight">${p.nickname}</span>
+                        <span class="font-bold text-yellow-400 mt-2 text-xl drop-shadow-md">${score} pts</span>
+                    </div>
+                `;
+                list.innerHTML += html;
+            });
+        }
+
+        function nextStep() {
+            if(currentStatus === 'reveal') {
+                fetch(`api_live.php?action=activate_playing&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
+            } else if(currentStatus === 'playing') {
+                fetch(`api_live.php?action=show_leaderboard&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
+            } else if(currentStatus === 'leaderboard' || currentStatus === 'lobby') {
+                fetch(`api_live.php?action=next_step&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
+            }
+        }
+
+        setInterval(sync, 1500);
+        sync();
     </script>
 </body>
 </html>
