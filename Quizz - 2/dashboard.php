@@ -33,7 +33,7 @@ $quizzes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-black italic tracking-tighter">BERNARD QUIZZ</h1>
             <div class="flex gap-4 items-center">
-                <a href="profil.php" class="bg-indigo-600 px-4 py-2 rounded-lg font-bold hover:bg-indigo-500 transition">👤 Mon Profil</a>
+                <a href="profil.php" class="bg-indigo-600 px-4 py-2 rounded-lg font-bold hover:bg-indigo-500 transition">Mon Profil</a>
                 <a href="logout.php" class="text-sm opacity-70 hover:opacity-100">Déconnexion</a>
             </div>
         </div>

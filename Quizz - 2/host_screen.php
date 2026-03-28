@@ -36,6 +36,10 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
 
     <div class="flex-grow flex flex-col items-center justify-center p-6 relative z-10 w-full h-full">
         
+        <div id="x2-badge" class="hidden text-red-500 font-black text-3xl md:text-5xl uppercase animate-bounce mb-6 bg-white px-6 py-2 rounded-2xl shadow-xl">
+            🚨 COMPTE DOUBLE ! 🚨
+        </div>
+
         <h2 id="q-title" class="text-4xl md:text-6xl font-black text-center mb-8 drop-shadow-2xl hidden px-4 leading-tight"></h2>
         <img id="q-img" src="" class="hidden max-h-72 rounded-3xl shadow-2xl mb-8 object-cover border-8 border-white">
 
@@ -58,6 +62,10 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
     </div>
 
     <script>
+        const sndTick = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+        const sndTing = new Audio('https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3');
+        const sndApplause = new Audio('https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3');
+
         let currentStatus = '';
         let timerInterval;
         let transitionTimeout;
@@ -95,7 +103,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
         }
 
         function updateUI(data) {
-            const elements = ['q-title', 'q-img', 'q-answers', 'timer-circle', 'leaderboard'];
+            const elements = ['q-title', 'q-img', 'q-answers', 'timer-circle', 'leaderboard', 'x2-badge'];
             elements.forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById('timer-circle').classList.remove('text-red-500', 'border-red-500');
             
@@ -103,12 +111,16 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             clearTimeout(transitionTimeout);
             clearInterval(timerInterval);
 
+            const isLastQuestion = data.current_q_index === data.questions_list.length - 1;
+
             if (data.status === 'reveal') {
                 cleanUpAnswers();
                 btnNext.classList.add('hidden');
                 document.getElementById('q-title').innerText = data.question.question_text;
                 document.getElementById('q-title').classList.remove('hidden');
                 
+                if (isLastQuestion) document.getElementById('x2-badge').classList.remove('hidden');
+
                 if (data.question.image_url && data.question.image_url.trim() !== '') {
                     document.getElementById('q-img').src = data.question.image_url;
                     document.getElementById('q-img').classList.remove('hidden');
@@ -125,6 +137,8 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 document.getElementById('q-title').innerText = data.question.question_text;
                 document.getElementById('q-title').classList.remove('hidden');
                 
+                if (isLastQuestion) document.getElementById('x2-badge').classList.remove('hidden');
+
                 if (data.question.image_url && data.question.image_url.trim() !== '') {
                     document.getElementById('q-img').classList.remove('hidden');
                 }
@@ -141,15 +155,22 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 timerInterval = setInterval(() => {
                     timeLeft--;
                     timerEl.innerText = timeLeft;
-                    if(timeLeft <= 3) timerEl.classList.add('text-red-500', 'border-red-500');
+                    
+                    if(timeLeft <= 5 && timeLeft > 0) {
+                        timerEl.classList.add('text-red-500', 'border-red-500');
+                        sndTick.currentTime = 0;
+                        sndTick.play().catch(e => {});
+                    }
+                    
                     if(timeLeft <= 0) {
                         clearInterval(timerInterval);
-                        // Fin du chrono => Appel manuel du nouvel état "show_answer"
                         fetch(`api_live.php?action=show_answer&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
                     }
                 }, 1000);
             } 
             else if (data.status === 'show_answer') {
+                sndTing.play().catch(e => {});
+
                 document.getElementById('q-title').innerText = data.question.question_text;
                 document.getElementById('q-title').classList.remove('hidden');
                 if (data.question.image_url && data.question.image_url.trim() !== '') {
@@ -159,12 +180,10 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 document.getElementById('q-answers').classList.remove('hidden');
                 correctAns = data.question.correct_answer;
                 
-                // Affichage des votes et de la bonne réponse
                 for(let i=1; i<=4; i++) {
                     let ansDiv = document.getElementById(`ans${i}`);
                     ansDiv.querySelector('.text').innerText = data.question[`opt${i}`];
                     
-                    // CORRECTION : On utilise directement i (1, 2, 3, 4) au lieu de i-1
                     let votes = data.answer_counts ? (data.answer_counts[i] || 0) : 0;
                     
                     let voteBadge = ansDiv.querySelector('.vote-count');
@@ -183,11 +202,8 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                     }
                 }
 
-                // Bouton manuel pour le maître du jeu
                 btnNext.classList.remove('hidden');
-                const isLast = data.current_q_index === data.questions_list.length - 1;
-                
-                if(isLast) {
+                if(isLastQuestion) {
                     btnNext.innerText = "🏆 VOIR LE PODIUM";
                     btnNext.onclick = () => fetch(`api_live.php?action=show_leaderboard&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
                 } else {
@@ -196,12 +212,10 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 }
             }
             else if (data.status === 'leaderboard') {
-                const isLast = data.current_q_index === data.questions_list.length - 1;
-                
                 btnNext.classList.remove('hidden');
                 document.getElementById('leaderboard').classList.remove('hidden');
 
-                if (isLast) {
+                if (isLastQuestion) {
                     btnNext.innerText = "🏆 VOIR LE PODIUM";
                     btnNext.onclick = () => fetch(`api_live.php?action=next_step&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
                     document.getElementById('leaderboard-title').innerText = "FIN DES QUESTIONS !";
@@ -247,6 +261,8 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 let zAura = (p.aura == 1 || p.aura == 5) ? 30 : 5;
                 let auraHtml = p.aura > 0 ? `<img src="personnage/aura/aura${p.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[180%] h-[180%] object-contain animate-pulse" style="z-index: ${zAura};">` : '';
                 
+                let streakIcon = (data.streaks && data.streaks[p.nickname] >= 3) ? '<span class="animate-bounce inline-block ml-3 text-2xl" title="Série de bonnes réponses (🔥)">🔥</span>' : '';
+
                 html += `
                     <tr class="border-b border-indigo-400/20 hover:bg-white/5 transition-colors">
                         <td class="p-4 text-center font-black text-3xl text-yellow-400">#${index + 1}</td>
@@ -260,7 +276,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                                 ${badge}
                             </div>
                         </td>
-                        <td class="p-4 font-black text-2xl tracking-wider uppercase">${p.nickname}</td>
+                        <td class="p-4 font-black text-2xl tracking-wider uppercase">${p.nickname} ${streakIcon}</td>
                         <td class="p-4 text-right font-bold text-3xl text-white">${data.scores[p.nickname] || 0}</td>
                     </tr>`;
             });
@@ -272,7 +288,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             let sortedPlayers = [...data.players].sort((a, b) => (data.scores[b.nickname] || 0) - (data.scores[a.nickname] || 0));
             let html = `<div class="relative w-full h-full flex flex-col items-center justify-end">`;
             
-            // CORRECTION CHEVAUCHEMENT : Relégation des perdants en arrière-plan, plus haut.
             html += `<div class="absolute top-10 md:top-24 w-full flex justify-center gap-6 md:gap-12 flex-wrap px-4 md:px-10 z-0 opacity-50 scale-75 blur-[1px]">`;
             for(let i = 3; i < sortedPlayers.length; i++) {
                 let p = sortedPlayers[i];
@@ -292,7 +307,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             }
             html += `</div>`;
 
-            // Blocs du Podium principal
             html += `<div class="flex items-end justify-center gap-4 md:gap-8 z-10 w-full max-w-4xl mx-auto h-[400px]">`;
 
             const getWinnerHtml = (p, id, place, medal, heightClass, bgClass, colorClass, borderClass) => {
@@ -365,6 +379,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 if(winner) { 
                     winner.classList.remove('silhouette'); 
                     winner.classList.add('revealed'); 
+                    sndApplause.play().catch(e => {});
                     fireConfetti();
                 }
             }, 16000);

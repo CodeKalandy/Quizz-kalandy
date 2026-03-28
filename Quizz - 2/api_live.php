@@ -1,4 +1,6 @@
 <?php
+// CETTE LIGNE EST CRUCIALE : Elle empêche PHP d'écrire des erreurs HTML qui cassent le JSON
+ini_set('display_errors', 0); 
 require_once 'db.php';
 header('Content-Type: application/json');
 
@@ -10,7 +12,7 @@ if (!is_dir($chemin_sessions)) { mkdir($chemin_sessions, 0777, true); }
 $gameStateFile = $chemin_sessions . '/game_' . $pin . '.json';
 
 if (file_exists($gameStateFile)) {
-    $state = json_decode(file_get_contents($gameStateFile), true);
+    $state = json_decode(file_get_contents($gameStateFile), true) ?: [];
 } else {
     $state = [
         'mode' => 'classique',
@@ -18,6 +20,7 @@ if (file_exists($gameStateFile)) {
         'players' => [], 
         'scores' => new stdClass(), 
         'correct_counts' => new stdClass(), 
+        'streaks' => new stdClass(), 
         'answers' => new stdClass(), 
         'status' => 'lobby', 
         'current_q_index' => -1, 
@@ -27,29 +30,36 @@ if (file_exists($gameStateFile)) {
 
 switch ($action) {
     case 'join':
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $nick = htmlspecialchars($input['nickname'] ?? 'Anonyme');
         
-        $scoresArr = (array)$state['scores'];
+        $scoresArr = (array)($state['scores'] ?? []);
         if (!isset($scoresArr[$nick])) {
-            $state['players'][] = [
+            $players = (array)($state['players'] ?? []);
+            $players[] = [
                 'nickname' => $nick,
                 'hair' => (int)($input['hair'] ?? 1),
                 'outfit' => (int)($input['outfit'] ?? 1),
                 'aura' => (int)($input['aura'] ?? 0),
                 'is_member' => filter_var($input['is_member'] ?? false, FILTER_VALIDATE_BOOLEAN)
             ];
+            $state['players'] = $players;
+            
             $scoresArr[$nick] = 0;
             $state['scores'] = (object)$scoresArr;
             
             $correctCounts = (array)($state['correct_counts'] ?? []);
             $correctCounts[$nick] = 0;
             $state['correct_counts'] = (object)$correctCounts;
+
+            $streaks = (array)($state['streaks'] ?? []);
+            $streaks[$nick] = 0;
+            $state['streaks'] = (object)$streaks;
         }
         break;
 
     case 'start_game':
-        $quiz_id = $_GET['quiz_id'];
+        $quiz_id = $_GET['quiz_id'] ?? 0;
         $stmt = $pdo->prepare("SELECT * FROM questions WHERE quiz_id = ? ORDER BY id ASC");
         $stmt->execute([$quiz_id]);
         $qs = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -57,10 +67,11 @@ switch ($action) {
         $state['status'] = 'reveal';
         $state['questions_list'] = $qs;
         $state['current_q_index'] = 0;
-        $state['question'] = $qs[0];
+        $state['question'] = $qs[0] ?? null;
         $state['answers'] = new stdClass();
         $state['eliminated'] = [];
         $state['correct_counts'] = new stdClass(); 
+        $state['streaks'] = new stdClass(); 
         break;
 
     case 'activate_playing':
@@ -68,74 +79,85 @@ switch ($action) {
         break;
 
     case 'submit_answer':
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $nick = $input['nickname'] ?? '';
-        $qIdx = (int)$state['current_q_index'];
+        $qIdx = (int)($state['current_q_index'] ?? 0);
         
-        if (in_array($nick, $state['eliminated'] ?? [])) {
-            break; 
-        }
+        $eliminated = (array)($state['eliminated'] ?? []);
+        if (in_array($nick, $eliminated)) { break; }
         
-        $allAnswers = (array)$state['answers'];
+        $allAnswers = (array)($state['answers'] ?? []);
         if (!isset($allAnswers[$qIdx])) { $allAnswers[$qIdx] = []; }
         $currentQAnswers = (array)$allAnswers[$qIdx];
 
         if ($nick && !isset($currentQAnswers[$nick])) {
-            $currentQAnswers[$nick] = $input['answer_index'];
+            $currentQAnswers[$nick] = $input['answer_index'] ?? 1;
             $allAnswers[$qIdx] = (object)$currentQAnswers;
             $state['answers'] = (object)$allAnswers;
 
-            $isCorrect = filter_var($input['is_correct'], FILTER_VALIDATE_BOOLEAN);
+            $isCorrect = filter_var($input['is_correct'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $qList = (array)($state['questions_list'] ?? []);
+            $isLastQuestion = ($qIdx === count($qList) - 1);
             
+            $streaks = (array)($state['streaks'] ?? []);
+            $currentStreak = $streaks[$nick] ?? 0;
+
             if ($isCorrect) {
                 $pdo->prepare("UPDATE users SET total_correct = total_correct + 1 WHERE username = ?")->execute([$nick]);
                 
+                $currentStreak++;
+                $streaks[$nick] = $currentStreak;
+
                 $timeTaken = (float)($input['response_time'] ?? 0);
                 $pts = max(500, 1000 - (int)($timeTaken * 50));
-                $scoresArr = (array)$state['scores'];
+                
+                if ($isLastQuestion) { $pts *= 2; }
+                if ($currentStreak >= 3) { $pts += 200; }
+
+                $scoresArr = (array)($state['scores'] ?? []);
                 $scoresArr[$nick] = ($scoresArr[$nick] ?? 0) + $pts;
                 $state['scores'] = (object)$scoresArr;
                 
                 $correctCounts = (array)($state['correct_counts'] ?? []);
                 $correctCounts[$nick] = ($correctCounts[$nick] ?? 0) + 1;
                 $state['correct_counts'] = (object)$correctCounts;
-
             } else {
                 $pdo->prepare("UPDATE users SET total_wrong = total_wrong + 1 WHERE username = ?")->execute([$nick]);
+                $streaks[$nick] = 0;
             }
+            $state['streaks'] = (object)$streaks;
         }
         break;
 
-    // NOUVELLE ÉTAPE : Révéler la bonne réponse avant le classement
-    c// NOUVELLE ÉTAPE : Révéler la bonne réponse avant le classement
     case 'show_answer':
         $state['status'] = 'show_answer';
-        $qIdx = (int)$state['current_q_index'];
+        $qIdx = (int)($state['current_q_index'] ?? 0);
         
         $allAnswers = (array)($state['answers'] ?? []);
         $currentQAnswers = (array)($allAnswers[$qIdx] ?? []);
         
-        // CORRECTION : Les réponses envoyées par le mobile sont 1, 2, 3 ou 4.
+        // CORRECTION DU DECALAGE DES VOTES
         $counts = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
-        foreach($currentQAnswers as $nick => $ansIndex) {
-            if(isset($counts[$ansIndex])) {
-                $counts[$ansIndex]++;
-            }
+        foreach($currentQAnswers as $n => $ansIndex) {
+            if(isset($counts[$ansIndex])) { $counts[$ansIndex]++; }
         }
         $state['answer_counts'] = $counts;
         break;
-        
+
     case 'show_leaderboard':
         $state['status'] = 'leaderboard';
         
         if (($state['mode'] ?? 'classique') === 'br') {
-            $scoresArr = (array)$state['scores'];
+            $scoresArr = (array)($state['scores'] ?? []);
             $worstPlayer = null;
             $lowestScore = 99999999;
             
-            foreach ($state['players'] as $p) {
+            $players = (array)($state['players'] ?? []);
+            $elim = (array)($state['eliminated'] ?? []);
+            
+            foreach ($players as $p) {
                 $nick = $p['nickname'];
-                if (!in_array($nick, $state['eliminated'] ?? [])) {
+                if (!in_array($nick, $elim)) {
                     $score = $scoresArr[$nick] ?? 0;
                     if ($score < $lowestScore) {
                         $lowestScore = $score;
@@ -144,26 +166,29 @@ switch ($action) {
                 }
             }
             
-            $activeCount = count($state['players']) - count($state['eliminated'] ?? []);
+            $activeCount = count($players) - count($elim);
             if ($worstPlayer && $activeCount > 1) {
-                $state['eliminated'][] = $worstPlayer;
+                $elim[] = $worstPlayer;
+                $state['eliminated'] = $elim;
             }
         }
         break;
 
     case 'next_step':
-        $state['current_q_index']++;
-        if ($state['current_q_index'] < count($state['questions_list'] ?? [])) {
+        $state['current_q_index'] = (int)($state['current_q_index'] ?? 0) + 1;
+        $qList = (array)($state['questions_list'] ?? []);
+        
+        if ($state['current_q_index'] < count($qList)) {
             $state['status'] = 'reveal';
-            $state['question'] = $state['questions_list'][$state['current_q_index']];
+            $state['question'] = $qList[$state['current_q_index']];
         } else {
             $state['status'] = 'finished';
-            
-            $finalScores = (array)$state['scores'];
+            $finalScores = (array)($state['scores'] ?? []);
             arsort($finalScores);
             $topNicks = array_keys($finalScores);
 
-            foreach ($state['players'] as $p) {
+            $players = (array)($state['players'] ?? []);
+            foreach ($players as $p) {
                 $pdo->prepare("UPDATE users SET total_games = total_games + 1 WHERE username = ?")->execute([$p['nickname']]);
             }
 
