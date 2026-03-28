@@ -35,8 +35,7 @@ switch ($action) {
                 'nickname' => $nick,
                 'hair' => (int)($input['hair'] ?? 1),
                 'outfit' => (int)($input['outfit'] ?? 1),
-                'aura' => (int)($input['aura'] ?? 0),
-                'is_member' => filter_var($input['is_member'] ?? false, FILTER_VALIDATE_BOOLEAN)
+                'aura' => (int)($input['aura'] ?? 0)
             ];
             $scoresArr[$nick] = 0;
             $state['scores'] = (object)$scoresArr;
@@ -49,15 +48,16 @@ switch ($action) {
         $stmt->execute([$quiz_id]);
         $qs = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        $state['status'] = 'reveal';
+        $state['status'] = 'reveal'; // Révélation de la question pendant 2 secondes
         $state['questions_list'] = $qs;
         $state['current_q_index'] = 0;
         $state['question'] = $qs[0];
         $state['answers'] = new stdClass();
-        $state['eliminated'] = []; // Réinitialisation pour le Battle Royale
+        $state['eliminated'] = [];
         break;
 
     case 'activate_playing':
+        // Activé automatiquement par le frontend après les 2 secondes
         $state['status'] = 'playing';
         break;
 
@@ -66,9 +66,8 @@ switch ($action) {
         $nick = $input['nickname'] ?? '';
         $qIdx = (int)$state['current_q_index'];
         
-        // On empêche les joueurs éliminés de soumettre des réponses
         if (in_array($nick, $state['eliminated'] ?? [])) {
-            break;
+            break; // Joueur éliminé
         }
         
         $allAnswers = (array)$state['answers'];
@@ -82,7 +81,6 @@ switch ($action) {
 
             $isCorrect = filter_var($input['is_correct'], FILTER_VALIDATE_BOOLEAN);
             
-            // Mise à jour des stats : +1 bonne/mauvaise réponse
             if ($isCorrect) {
                 $pdo->prepare("UPDATE users SET total_correct = total_correct + 1 WHERE username = ?")->execute([$nick]);
                 $timeTaken = (float)($input['response_time'] ?? 0);
@@ -100,17 +98,11 @@ switch ($action) {
     case 'show_leaderboard':
         $state['status'] = 'leaderboard';
         
-        // LOGIQUE BATTLE ROYALE : Élimination
         if (($state['mode'] ?? 'classique') === 'br') {
-            $qIdx = (int)$state['current_q_index'];
-            $currentQAnswers = (array)($state['answers']->$qIdx ?? []);
             $scoresArr = (array)$state['scores'];
-            $correctId = $state['question']['correct_answer'];
-            
             $worstPlayer = null;
             $lowestScore = 99999999;
             
-            // Cherche le joueur actif ayant le score le plus bas
             foreach ($state['players'] as $p) {
                 $nick = $p['nickname'];
                 if (!in_array($nick, $state['eliminated'] ?? [])) {
@@ -122,7 +114,6 @@ switch ($action) {
                 }
             }
             
-            // S'il reste plus d'un joueur, on élimine le pire
             $activeCount = count($state['players']) - count($state['eliminated'] ?? []);
             if ($worstPlayer && $activeCount > 1) {
                 $state['eliminated'][] = $worstPlayer;
@@ -133,22 +124,19 @@ switch ($action) {
     case 'next_step':
         $state['current_q_index']++;
         if ($state['current_q_index'] < count($state['questions_list'] ?? [])) {
-            $state['status'] = 'reveal';
+            $state['status'] = 'reveal'; // Repasse en mode révélation pour la question suivante
             $state['question'] = $state['questions_list'][$state['current_q_index']];
         } else {
             $state['status'] = 'finished';
             
-            // STATISTIQUES GLOBALES DE FIN DE PARTIE
             $finalScores = (array)$state['scores'];
-            arsort($finalScores); // Trie par score décroissant
+            arsort($finalScores);
             $topNicks = array_keys($finalScores);
 
-            // +1 Partie jouée pour tous les participants
             foreach ($state['players'] as $p) {
                 $pdo->prepare("UPDATE users SET total_games = total_games + 1 WHERE username = ?")->execute([$p['nickname']]);
             }
 
-            // Mise à jour des podiums
             if (isset($topNicks[0])) $pdo->prepare("UPDATE users SET podium_1 = podium_1 + 1 WHERE username = ?")->execute([$topNicks[0]]);
             if (isset($topNicks[1])) $pdo->prepare("UPDATE users SET podium_2 = podium_2 + 1 WHERE username = ?")->execute([$topNicks[1]]);
             if (isset($topNicks[2])) $pdo->prepare("UPDATE users SET podium_3 = podium_3 + 1 WHERE username = ?")->execute([$topNicks[2]]);

@@ -1,12 +1,7 @@
 <?php
 require_once 'db.php';
 $pin = $_GET['pin'] ?? '';
-
-// Vérification du statut VIP (joueur connecté)
-$is_member = isset($_SESSION['user_id']);
-$default_nick = $is_member ? $_SESSION['username'] : '';
-$max_items = $is_member ? 10 : 5;
-$max_auras = $is_member ? 5 : 0;
+$default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -40,12 +35,6 @@ $max_auras = $is_member ? 5 : 0;
 
     <h1 class="text-2xl font-black mb-4 uppercase tracking-widest">Crée ton Bernard</h1>
 
-    <?php if(!$is_member): ?>
-        <div class="mb-4 bg-yellow-400 text-yellow-900 text-xs font-bold px-4 py-2 rounded-full shadow-lg">
-            ⭐ Connectez-vous pour débloquer tous les styles et les auras !
-        </div>
-    <?php endif; ?>
-
     <div class="bg-white text-gray-800 p-6 rounded-3xl shadow-2xl w-full max-w-md">
         
         <div class="preview-container shadow-inner border-4 border-indigo-100">
@@ -55,13 +44,13 @@ $max_auras = $is_member ? 5 : 0;
         </div>
 
         <div class="space-y-5">
-            <input type="text" id="nick" maxlength="12" placeholder="TON PSEUDO" value="<?= htmlspecialchars($default_nick) ?>" <?= $is_member ? 'readonly' : '' ?>
-                   class="w-full p-4 bg-gray-100 border-none rounded-2xl font-black text-center text-indigo-600 focus:ring-4 focus:ring-indigo-200 outline-none transition-all <?= $is_member ? 'opacity-70 cursor-not-allowed' : '' ?>">
+            <input type="text" id="nick" maxlength="12" placeholder="TON PSEUDO" value="<?= htmlspecialchars($default_nick) ?>"
+                   class="w-full p-4 bg-gray-100 border-none rounded-2xl font-black text-center text-indigo-600 focus:ring-4 focus:ring-indigo-200 outline-none transition-all">
 
             <div>
                 <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Coupe de cheveux</p>
                 <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
-                    <?php for($i=1; $i<=$max_items; $i++): ?>
+                    <?php for($i=1; $i<=10; $i++): ?>
                         <div onclick="setHair(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
                             <img src="personnage/cheveux/cheveux<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
                         </div>
@@ -72,7 +61,7 @@ $max_auras = $is_member ? 5 : 0;
             <div>
                 <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Style vestimentaire</p>
                 <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
-                    <?php for($i=1; $i<=$max_items; $i++): ?>
+                    <?php for($i=1; $i<=10; $i++): ?>
                         <div onclick="setOutfit(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
                             <img src="personnage/tenue/tenue<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
                         </div>
@@ -80,19 +69,17 @@ $max_auras = $is_member ? 5 : 0;
                 </div>
             </div>
 
-            <?php if($is_member): ?>
             <div>
-                <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Aura magique (VIP)</p>
+                <p class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest">Aura magique</p>
                 <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
                     <div onclick="setAura(0)" class="flex-shrink-0 w-14 h-14 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer font-bold text-gray-400">Ø</div>
-                    <?php for($i=1; $i<=$max_auras; $i++): ?>
+                    <?php for($i=1; $i<=5; $i++): ?>
                         <div onclick="setAura(<?= $i ?>)" class="flex-shrink-0 w-14 h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1">
                             <img src="personnage/aura/aura<?= $i ?>.png" class="w-full h-full object-contain" onerror="this.parentElement.style.display='none'">
                         </div>
                     <?php endfor; ?>
                 </div>
             </div>
-            <?php endif; ?>
 
             <button onclick="join()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg transform active:scale-95 transition-all uppercase tracking-widest">
                 C'est parti !
@@ -128,8 +115,7 @@ $max_auras = $is_member ? 5 : 0;
                     nickname: nick, 
                     hair: hair, 
                     outfit: outfit, 
-                    aura: aura, 
-                    is_member: <?= $is_member ? 'true' : 'false' ?>
+                    aura: aura
                 })
             })
             .then(r => r.json())
