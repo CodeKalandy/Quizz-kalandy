@@ -164,7 +164,8 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                     let ansDiv = document.getElementById(`ans${i}`);
                     ansDiv.querySelector('.text').innerText = data.question[`opt${i}`];
                     
-                    let votes = data.answer_counts ? (data.answer_counts[i-1] || 0) : 0;
+                    // CORRECTION : On utilise directement i (1, 2, 3, 4) au lieu de i-1
+                    let votes = data.answer_counts ? (data.answer_counts[i] || 0) : 0;
                     
                     let voteBadge = ansDiv.querySelector('.vote-count');
                     if(!voteBadge) {

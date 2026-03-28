@@ -107,6 +107,7 @@ switch ($action) {
         break;
 
     // NOUVELLE ÉTAPE : Révéler la bonne réponse avant le classement
+    c// NOUVELLE ÉTAPE : Révéler la bonne réponse avant le classement
     case 'show_answer':
         $state['status'] = 'show_answer';
         $qIdx = (int)$state['current_q_index'];
@@ -114,8 +115,8 @@ switch ($action) {
         $allAnswers = (array)($state['answers'] ?? []);
         $currentQAnswers = (array)($allAnswers[$qIdx] ?? []);
         
-        // On compte combien de joueurs ont voté pour chaque réponse (0, 1, 2, 3)
-        $counts = [0 => 0, 1 => 0, 2 => 0, 3 => 0];
+        // CORRECTION : Les réponses envoyées par le mobile sont 1, 2, 3 ou 4.
+        $counts = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
         foreach($currentQAnswers as $nick => $ansIndex) {
             if(isset($counts[$ansIndex])) {
                 $counts[$ansIndex]++;
@@ -123,7 +124,7 @@ switch ($action) {
         }
         $state['answer_counts'] = $counts;
         break;
-
+        
     case 'show_leaderboard':
         $state['status'] = 'leaderboard';
         
