@@ -12,22 +12,28 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
     <title>Écran Hôte - Bernard Quizz</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        @keyframes popIn {
-            0% { transform: scale(0.5); opacity: 0; }
-            80% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
-        }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
         .animate-pop-in { animation: popIn 0.8s ease-out forwards; }
         .silhouette { filter: brightness(0); transition: filter 3s ease-in-out; }
         .revealed { filter: brightness(1); }
+        
+        /* Cosmétiques VIP CSS */
+        @keyframes rainbow { 100% { filter: hue-rotate(360deg); } }
+        .aura-rainbow { position: absolute; top: -15%; left: -15%; width: 130%; height: 130%; border-radius: 50%; box-shadow: 0 0 20px 5px #f43f5e, inset 0 0 20px 5px #f43f5e; animation: rainbow 2.5s linear infinite; z-index: 5; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        .aura-float { animation: float 3s ease-in-out infinite; }
+        .neon-vip { text-shadow: 0 0 5px #fff, 0 0 10px #facc15, 0 0 20px #facc15; color: #facc15 !important; }
     </style>
 </head>
 <body class="bg-indigo-900 text-white flex flex-col h-screen overflow-hidden font-sans relative">
 
     <div class="flex justify-between items-center p-6 bg-black bg-opacity-40 shadow-md z-20 relative">
-        <div>
-            <span class="text-xs font-black text-gray-400 uppercase tracking-widest">CODE PIN DU SALON</span>
-            <h1 class="text-5xl font-black text-yellow-400 tracking-widest drop-shadow-lg"><?= htmlspecialchars($pin) ?></h1>
+        <div class="flex items-center gap-4">
+            <img src="images/logo.png" alt="Logo" class="h-16 drop-shadow-md">
+            <div>
+                <span class="text-xs font-black text-gray-400 uppercase tracking-widest">CODE PIN DU SALON</span>
+                <h1 class="text-5xl font-black text-yellow-400 tracking-widest drop-shadow-lg"><?= htmlspecialchars($pin) ?></h1>
+            </div>
         </div>
         <button id="btn-next" class="hidden bg-indigo-500 hover:bg-indigo-400 px-8 py-4 rounded-2xl font-black text-xl uppercase transition shadow-lg transform hover:scale-105">
             Suivant
@@ -72,6 +78,31 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
         let timeLeft = 0;
         let correctAns = 1;
         let podiumAnimated = false; 
+
+        // Fonction Helper pour générer les avatars avec Auras CSS
+        function getAvatarHtml(p, sizeClasses, badgeSize) {
+            let auraHtml = '';
+            let floatClass = p.aura == 7 ? 'aura-float' : '';
+            
+            if (p.aura > 0 && p.aura <= 5) {
+                let zAura = (p.aura == 1 || p.aura == 5) ? 30 : 5;
+                auraHtml = `<img src="personnage/aura/aura${p.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura};">`;
+            } else if (p.aura == 6) {
+                auraHtml = `<div class="aura-rainbow"></div>`;
+            }
+            
+            let badge = p.is_member ? `<div class="absolute -bottom-1 -right-1 bg-yellow-400 text-black font-black flex items-center justify-center rounded-full border-2 border-white z-40 shadow-lg ${badgeSize}">★</div>` : '';
+            
+            return `
+            <div class="relative ${sizeClasses} bg-white bg-opacity-20 rounded-full border-2 border-indigo-300 flex items-end justify-center ${floatClass}">
+                ${auraHtml}
+                <div class="relative w-full h-full overflow-hidden rounded-full flex items-end justify-center">
+                    <img src="personnage/tenue/tenue${p.outfit}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;">
+                    <img src="personnage/cheveux/cheveux${p.hair}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;">
+                </div>
+                ${badge}
+            </div>`;
+        }
 
         function sync() {
             fetch(`api_live.php?action=get_state&pin=<?= htmlspecialchars($pin) ?>`)
@@ -251,33 +282,26 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                             <th class="p-4 font-black uppercase tracking-widest text-center w-24">Rang</th>
                             <th class="p-4 font-black uppercase tracking-widest text-center w-24">Avatar</th>
                             <th class="p-4 font-black uppercase tracking-widest">Joueur</th>
-                            <th class="p-4 font-black uppercase tracking-widest text-right">Points</th>
+                            <th class="p-4 font-black uppercase tracking-widest text-right">Score</th>
                         </tr>
                     </thead>
                     <tbody>`;
             
             sortedPlayers.slice(0, 5).forEach((p, index) => {
-                let badge = p.is_member ? `<div class="absolute -bottom-1 -right-1 bg-yellow-400 text-black text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border border-white z-40 shadow-lg">★</div>` : '';
-                let zAura = (p.aura == 1 || p.aura == 5) ? 30 : 5;
-                let auraHtml = p.aura > 0 ? `<img src="personnage/aura/aura${p.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[180%] h-[180%] object-contain animate-pulse" style="z-index: ${zAura};">` : '';
-                
+                let avatar = getAvatarHtml(p, 'w-16 h-16', 'text-[10px] w-5 h-5');
+                let neonClass = p.is_member ? 'neon-vip' : '';
                 let streakIcon = (data.streaks && data.streaks[p.nickname] >= 3) ? '<span class="animate-bounce inline-block ml-3 text-2xl" title="Série de bonnes réponses (🔥)">🔥</span>' : '';
+                
+                let scoreDisplay = (data.mode === 'survie') 
+                    ? ('❤️'.repeat(data.hearts[p.nickname] || 0) + '🖤'.repeat(3 - (data.hearts[p.nickname] || 0))) 
+                    : (data.scores[p.nickname] || 0);
 
                 html += `
                     <tr class="border-b border-indigo-400/20 hover:bg-white/5 transition-colors">
                         <td class="p-4 text-center font-black text-3xl text-yellow-400">#${index + 1}</td>
-                        <td class="p-2 flex justify-center">
-                            <div class="relative w-16 h-16 bg-white bg-opacity-20 rounded-full border-2 border-indigo-300 flex items-end justify-center">
-                                ${auraHtml}
-                                <div class="relative w-full h-full overflow-hidden rounded-full flex items-end justify-center">
-                                    <img src="personnage/tenue/tenue${p.outfit}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;">
-                                    <img src="personnage/cheveux/cheveux${p.hair}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;">
-                                </div>
-                                ${badge}
-                            </div>
-                        </td>
-                        <td class="p-4 font-black text-2xl tracking-wider uppercase">${p.nickname} ${streakIcon}</td>
-                        <td class="p-4 text-right font-bold text-3xl text-white">${data.scores[p.nickname] || 0}</td>
+                        <td class="p-2 flex justify-center">${avatar}</td>
+                        <td class="p-4 font-black text-2xl tracking-wider uppercase ${neonClass}">${p.nickname} ${streakIcon}</td>
+                        <td class="p-4 text-right font-bold text-3xl text-white tracking-widest">${scoreDisplay}</td>
                     </tr>`;
             });
             html += `</tbody></table></div>`;
@@ -288,47 +312,42 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             let sortedPlayers = [...data.players].sort((a, b) => (data.scores[b.nickname] || 0) - (data.scores[a.nickname] || 0));
             let html = `<div class="relative w-full h-full flex flex-col items-center justify-end">`;
             
+            // Joueurs éliminés en arrière-plan
             html += `<div class="absolute top-10 md:top-24 w-full flex justify-center gap-6 md:gap-12 flex-wrap px-4 md:px-10 z-0 opacity-50 scale-75 blur-[1px]">`;
             for(let i = 3; i < sortedPlayers.length; i++) {
                 let p = sortedPlayers[i];
                 let delay = Math.random() * 0.5; 
-                let badge = p.is_member ? `<div class="absolute -bottom-1 -right-1 bg-yellow-400 text-black text-[10px] font-black w-4 h-4 flex items-center justify-center rounded-full border border-white z-40">★</div>` : '';
+                let avatar = getAvatarHtml(p, 'w-20 h-20', 'text-[10px] w-5 h-5');
+                let neonClass = p.is_member ? 'neon-vip' : '';
                 html += `
                 <div class="opacity-0 animate-pop-in flex flex-col items-center" style="animation-delay: ${delay}s">
-                    <div class="relative w-20 h-20 bg-white bg-opacity-10 rounded-full border-2 border-indigo-400 overflow-visible flex items-end justify-center">
-                        <div class="relative w-full h-full overflow-hidden rounded-full flex items-end justify-center">
-                            <img src="personnage/tenue/tenue${p.outfit}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index:10;">
-                            <img src="personnage/cheveux/cheveux${p.hair}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index:20;">
-                        </div>
-                        ${badge}
-                    </div>
-                    <span class="text-[14px] font-bold mt-2 bg-black bg-opacity-50 px-3 py-1 rounded-lg">${p.nickname}</span>
+                    ${avatar}
+                    <span class="text-[14px] font-bold mt-2 bg-black bg-opacity-50 px-3 py-1 rounded-lg ${neonClass}">${p.nickname}</span>
                 </div>`;
             }
             html += `</div>`;
 
+            // Podium Principal
             html += `<div class="flex items-end justify-center gap-4 md:gap-8 z-10 w-full max-w-4xl mx-auto h-[400px]">`;
 
             const getWinnerHtml = (p, id, place, medal, heightClass, bgClass, colorClass, borderClass) => {
                 if(!p) return `<div class="w-32 md:w-48"></div>`;
-                let zAura = (p.aura == 1 || p.aura == 5) ? 30 : 5;
-                let auraHtml = p.aura > 0 ? `<img src="personnage/aura/aura${p.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura};">` : '';
-                let badge = p.is_member ? `<div class="absolute bottom-2 right-2 bg-yellow-400 text-black text-[14px] font-black w-8 h-8 flex items-center justify-center rounded-full border-2 border-white z-40 shadow-lg">★</div>` : '';
+                let avatar = getAvatarHtml(p, 'w-32 h-32 md:w-48 md:h-48', 'text-[14px] w-8 h-8');
                 let silhouetteClass = place === 1 ? 'silhouette' : ''; 
+                let neonClass = p.is_member ? 'neon-vip' : '';
+                
+                let scoreDisplay = (data.mode === 'survie') 
+                    ? ('❤️'.repeat(data.hearts[p.nickname] || 0)) 
+                    : (data.scores[p.nickname] || 0) + ' pts';
 
                 return `
                 <div id="${id}" class="opacity-0 flex flex-col items-center">
                     <span class="text-4xl md:text-6xl mb-4 ${place === 1 ? 'animate-bounce' : ''}">${medal}</span>
                     <div id="${place === 1 ? 'winner-block' : ''}" class="flex flex-col items-center ${silhouetteClass} transition-all duration-[3000ms]">
-                        <div class="relative w-32 h-32 md:w-48 md:h-48 flex items-end justify-center mb-[-20px]">
-                            ${auraHtml}
-                            <img src="personnage/tenue/tenue${p.outfit}.png" class="absolute w-full h-full object-contain bottom-0" style="z-index: 10;">
-                            <img src="personnage/cheveux/cheveux${p.hair}.png" class="absolute w-full h-full object-contain bottom-0" style="z-index: 20;">
-                            ${badge}
-                        </div>
+                        <div class="mb-[-20px]">${avatar}</div>
                         <div class="${bgClass} w-36 md:w-56 ${heightClass} flex flex-col items-center justify-start pt-6 rounded-t-2xl border-4 ${borderClass} shadow-2xl relative z-20">
-                            <span class="font-black ${colorClass} text-xl md:text-2xl text-center px-2 truncate w-full">${p.nickname}</span>
-                            <span class="font-bold text-black opacity-60 text-lg md:text-xl">${data.scores[p.nickname]||0} pts</span>
+                            <span class="font-black ${colorClass} ${neonClass} text-xl md:text-2xl text-center px-2 truncate w-full">${p.nickname}</span>
+                            <span class="font-bold text-black opacity-60 text-lg md:text-xl tracking-widest">${scoreDisplay}</span>
                         </div>
                     </div>
                 </div>`;
@@ -340,6 +359,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
 
             html += `</div>`;
             
+            // Statistiques
             let statsHtml = `
             <div class="absolute right-4 md:right-10 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 backdrop-blur-md p-6 rounded-3xl border-2 border-indigo-400 shadow-2xl opacity-0 animate-pop-in z-50 w-72 md:w-80" style="animation-delay: 17s;">
                 <h4 class="text-xl font-black text-yellow-400 mb-4 uppercase text-center border-b border-indigo-500 pb-3">Statistiques</h4>
@@ -348,15 +368,17 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             sortedPlayers.slice(0, 5).forEach((p) => {
                 let count = (data.correct_counts && data.correct_counts[p.nickname]) || 0;
                 let s = count > 1 ? 's' : '';
+                let neonClass = p.is_member ? 'neon-vip' : '';
                 statsHtml += `
                     <li class="flex justify-between items-center text-md md:text-lg">
-                        <span class="font-bold text-white truncate max-w-[120px] uppercase tracking-wider">${p.nickname}</span>
+                        <span class="font-bold text-white truncate max-w-[120px] uppercase tracking-wider ${neonClass}">${p.nickname}</span>
                         <span class="bg-green-500 text-white px-3 py-1 rounded-xl font-black text-xs md:text-sm shadow-md">${count} juste${s}</span>
                     </li>`;
             });
             statsHtml += `</ul></div>`;
             html += statsHtml;
 
+            // Awards
             let eclair = '', tortue = '', miracule = '';
             let minTime = 9999, maxTime = 0, maxWrong = 0;
             

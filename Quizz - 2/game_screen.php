@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Bernard Quizz - Play</title>
+    <style>
+        @keyframes rainbow { 100% { filter: hue-rotate(360deg); } }
+        .aura-rainbow { position: absolute; top: -15%; left: -15%; width: 130%; height: 130%; border-radius: 50%; box-shadow: 0 0 20px 5px #f43f5e, inset 0 0 20px 5px #f43f5e; animation: rainbow 2.5s linear infinite; z-index: 5; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .aura-float { animation: float 3s ease-in-out infinite; }
+        .neon-vip { text-shadow: 0 0 5px #fff, 0 0 10px #facc15, 0 0 20px #facc15; color: #facc15 !important; }
+    </style>
 </head>
 <body class="bg-indigo-900 text-white font-sans flex flex-col h-screen overflow-hidden">
     
@@ -21,8 +28,8 @@
                 🃏 50/50
             </button>
             <div class="text-right ml-2">
-                <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest leading-none mb-1">Score</p>
-                <p id="my-score" class="font-black text-2xl text-yellow-400 leading-none transition-all duration-500">0</p>
+                <p id="score-label" class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest leading-none mb-1">Score</p>
+                <p id="my-score" class="font-black text-2xl text-yellow-400 leading-none transition-all duration-500 tracking-widest">0</p>
             </div>
         </div>
     </div>
@@ -79,27 +86,43 @@
                     if(me) {
                         isMemberCache = me.is_member;
                         if(!document.getElementById('my-avatar').innerHTML.includes('img')) {
-                            let zAura = (me.aura == 1 || me.aura == 5) ? 30 : 5;
-                            let auraHtml = me.aura > 0 ? `<img src="personnage/aura/aura${me.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura};">` : '';
+                            let auraHtml = '';
+                            let floatClass = me.aura == 7 ? 'aura-float' : '';
+                            if (me.aura > 0 && me.aura <= 5) {
+                                let zAura = (me.aura == 1 || me.aura == 5) ? 30 : 5;
+                                auraHtml = `<img src="personnage/aura/aura${me.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura};">`;
+                            } else if (me.aura == 6) {
+                                auraHtml = `<div class="aura-rainbow"></div>`;
+                            }
                             let badge = me.is_member ? `<div class="absolute -bottom-1 -right-1 bg-yellow-400 text-black text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white z-40 shadow-sm" title="VIP">★</div>` : '';
-                            document.getElementById('my-avatar').innerHTML = `${auraHtml}<div class="relative w-full h-full overflow-hidden rounded-full flex items-end justify-center"><img src="personnage/tenue/tenue${me.outfit}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;"><img src="personnage/cheveux/cheveux${me.hair}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;"></div>${badge}`;
+                            
+                            document.getElementById('my-avatar').innerHTML = `${auraHtml}<div class="relative w-full h-full overflow-hidden rounded-full flex items-end justify-center ${floatClass}"><img src="personnage/tenue/tenue${me.outfit}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;"><img src="personnage/cheveux/cheveux${me.hair}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;"></div>${badge}`;
                         }
+
+                        let neonClass = me.is_member ? 'neon-vip' : '';
+                        let streakIcon = (data.streaks && data.streaks[nick] >= 3) ? ' <span class="animate-bounce inline-block" title="Série de bonnes réponses !">🔥</span>' : '';
+                        document.getElementById('player-nick').innerHTML = `<span class="${neonClass}">${nick}</span>` + streakIcon;
                     }
                 }
 
-                if (data.streaks && data.streaks[nick] >= 3) {
-                    document.getElementById('player-nick').innerHTML = nick + ' <span class="animate-bounce inline-block" title="Série de bonnes réponses !">🔥</span>';
+                // Affichage Score vs Coeurs
+                if (data.mode === 'survie') {
+                    document.getElementById('score-label').innerText = 'Vies';
+                    let h = data.hearts ? (data.hearts[nick] || 0) : 0;
+                    let heartsStr = '❤️'.repeat(h) + '🖤'.repeat(3 - h);
+                    if (document.getElementById('my-score').innerText !== heartsStr) {
+                        document.getElementById('my-score').innerText = heartsStr;
+                    }
                 } else {
-                    document.getElementById('player-nick').innerText = nick;
-                }
-
-                if(data.scores && data.scores[nick] !== undefined) {
-                    if (data.status === 'show_answer' || data.status === 'leaderboard' || data.status === 'finished') {
-                        let scoreEl = document.getElementById('my-score');
-                        if (scoreEl.innerText !== data.scores[nick].toString()) {
-                            scoreEl.innerText = data.scores[nick];
-                            scoreEl.classList.add('scale-125', 'text-white');
-                            setTimeout(() => scoreEl.classList.remove('scale-125', 'text-white'), 300);
+                    document.getElementById('score-label').innerText = 'Score';
+                    if(data.scores && data.scores[nick] !== undefined) {
+                        if (data.status === 'show_answer' || data.status === 'leaderboard' || data.status === 'finished') {
+                            let scoreEl = document.getElementById('my-score');
+                            if (scoreEl.innerText !== data.scores[nick].toString()) {
+                                scoreEl.innerText = data.scores[nick];
+                                scoreEl.classList.add('scale-125', 'text-white');
+                                setTimeout(() => scoreEl.classList.remove('scale-125', 'text-white'), 300);
+                            }
                         }
                     }
                 }

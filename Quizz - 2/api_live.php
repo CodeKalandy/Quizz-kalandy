@@ -22,6 +22,7 @@ if (file_exists($gameStateFile)) {
         'wrong_counts' => new stdClass(),
         'response_times' => new stdClass(),
         'streaks' => new stdClass(), 
+        'hearts' => new stdClass(), // ❤️ Pour le mode survie
         'answers' => new stdClass(), 
         'status' => 'lobby', 
         'current_q_index' => -1, 
@@ -45,14 +46,13 @@ switch ($action) {
                 'is_member' => filter_var($input['is_member'] ?? false, FILTER_VALIDATE_BOOLEAN)
             ];
             $state['players'] = $players;
-            
             $scoresArr[$nick] = 0;
             $state['scores'] = (object)$scoresArr;
-            
             $state['correct_counts'] = (object)array_merge((array)($state['correct_counts'] ?? []), [$nick => 0]);
             $state['wrong_counts'] = (object)array_merge((array)($state['wrong_counts'] ?? []), [$nick => 0]);
             $state['response_times'] = (object)array_merge((array)($state['response_times'] ?? []), [$nick => 0]);
             $state['streaks'] = (object)array_merge((array)($state['streaks'] ?? []), [$nick => 0]);
+            $state['hearts'] = (object)array_merge((array)($state['hearts'] ?? []), [$nick => 3]);
         }
         break;
 
@@ -72,6 +72,10 @@ switch ($action) {
         $state['wrong_counts'] = new stdClass();
         $state['response_times'] = new stdClass();
         $state['streaks'] = new stdClass(); 
+        
+        $hearts = [];
+        foreach($state['players'] as $p) { $hearts[$p['nickname']] = 3; }
+        $state['hearts'] = (object)$hearts;
         break;
 
     case 'activate_playing':
@@ -83,8 +87,8 @@ switch ($action) {
         $nick = $input['nickname'] ?? '';
         $qIdx = (int)($state['current_q_index'] ?? 0);
         
-        $eliminated = (array)($state['eliminated'] ?? []);
-        if (in_array($nick, $eliminated)) { break; }
+        $elim = (array)($state['eliminated'] ?? []);
+        if (in_array($nick, $elim)) { break; }
         
         $allAnswers = (array)($state['answers'] ?? []);
         if (!isset($allAnswers[$qIdx])) { $allAnswers[$qIdx] = []; }
@@ -109,7 +113,6 @@ switch ($action) {
 
             if ($isCorrect) {
                 $pdo->prepare("UPDATE users SET total_correct = total_correct + 1 WHERE username = ?")->execute([$nick]);
-                
                 $currentStreak++;
                 $streaks[$nick] = $currentStreak;
 
@@ -121,16 +124,15 @@ switch ($action) {
                 $scoresArr[$nick] = ($scoresArr[$nick] ?? 0) + $pts;
                 $state['scores'] = (object)$scoresArr;
                 
-                $correctCounts = (array)($state['correct_counts'] ?? []);
-                $correctCounts[$nick] = ($correctCounts[$nick] ?? 0) + 1;
-                $state['correct_counts'] = (object)$correctCounts;
+                $cc = (array)($state['correct_counts'] ?? []);
+                $cc[$nick] = ($cc[$nick] ?? 0) + 1;
+                $state['correct_counts'] = (object)$cc;
             } else {
                 $pdo->prepare("UPDATE users SET total_wrong = total_wrong + 1 WHERE username = ?")->execute([$nick]);
                 $streaks[$nick] = 0;
-
-                $wrongCounts = (array)($state['wrong_counts'] ?? []);
-                $wrongCounts[$nick] = ($wrongCounts[$nick] ?? 0) + 1;
-                $state['wrong_counts'] = (object)$wrongCounts;
+                $wc = (array)($state['wrong_counts'] ?? []);
+                $wc[$nick] = ($wc[$nick] ?? 0) + 1;
+                $state['wrong_counts'] = (object)$wc;
             }
             $state['streaks'] = (object)$streaks;
         }
@@ -139,7 +141,6 @@ switch ($action) {
     case 'show_answer':
         $state['status'] = 'show_answer';
         $qIdx = (int)($state['current_q_index'] ?? 0);
-        
         $allAnswers = (array)($state['answers'] ?? []);
         $currentQAnswers = (array)($allAnswers[$qIdx] ?? []);
         
@@ -148,6 +149,27 @@ switch ($action) {
             if(isset($counts[$ansIndex])) { $counts[$ansIndex]++; }
         }
         $state['answer_counts'] = $counts;
+
+        // ❤️ LOGIQUE DU MODE SURVIE
+        if (($state['mode'] ?? 'classique') === 'survie') {
+            $hearts = (array)($state['hearts'] ?? []);
+            $elim = (array)($state['eliminated'] ?? []);
+            
+            foreach ($state['players'] as $p) {
+                $n = $p['nickname'];
+                if (in_array($n, $elim)) continue;
+                
+                $ans = $currentQAnswers[$n] ?? null;
+                $isCorrect = ($ans == $state['question']['correct_answer']);
+                
+                if (!$isCorrect) { // Si faux ou s'il n'a pas répondu
+                    $hearts[$n] = max(0, ($hearts[$n] ?? 3) - 1);
+                    if ($hearts[$n] == 0) { $elim[] = $n; }
+                }
+            }
+            $state['hearts'] = (object)$hearts;
+            $state['eliminated'] = $elim;
+        }
         break;
 
     case 'show_leaderboard':
@@ -157,7 +179,6 @@ switch ($action) {
             $scoresArr = (array)($state['scores'] ?? []);
             $worstPlayer = null;
             $lowestScore = 99999999;
-            
             $players = (array)($state['players'] ?? []);
             $elim = (array)($state['eliminated'] ?? []);
             
@@ -165,15 +186,11 @@ switch ($action) {
                 $nick = $p['nickname'];
                 if (!in_array($nick, $elim)) {
                     $score = $scoresArr[$nick] ?? 0;
-                    if ($score < $lowestScore) {
-                        $lowestScore = $score;
-                        $worstPlayer = $nick;
-                    }
+                    if ($score < $lowestScore) { $lowestScore = $score; $worstPlayer = $nick; }
                 }
             }
             
-            $activeCount = count($players) - count($elim);
-            if ($worstPlayer && $activeCount > 1) {
+            if ($worstPlayer && (count($players) - count($elim)) > 1) {
                 $elim[] = $worstPlayer;
                 $state['eliminated'] = $elim;
             }
