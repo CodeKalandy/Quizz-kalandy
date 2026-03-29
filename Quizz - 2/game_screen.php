@@ -8,51 +8,52 @@
 </head>
 <body class="bg-indigo-900 text-white font-sans flex flex-col h-screen overflow-hidden">
     
-    <div class="bg-black bg-opacity-30 p-4 flex justify-between items-center shadow-md z-10">
+    <div class="bg-black bg-opacity-30 p-4 flex justify-between items-center shadow-md z-20 relative">
         <div class="flex items-center gap-3">
-            <div id="my-avatar" class="relative w-12 h-12 bg-white bg-opacity-10 rounded-full border-2 border-indigo-400 flex items-end justify-center">
-            </div>
+            <div id="my-avatar" class="relative w-12 h-12 bg-white bg-opacity-10 rounded-full border-2 border-indigo-400 flex items-end justify-center"></div>
             <div>
                 <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest leading-none mb-1">Joueur</p>
                 <p id="player-nick" class="font-black text-lg truncate max-w-[120px] leading-none"></p>
             </div>
         </div>
-        <div class="flex items-center gap-4">
-            <button id="btn-joker" onclick="useJoker()" class="hidden bg-purple-600 hover:bg-purple-500 text-white font-black px-4 py-2 rounded-xl shadow-lg border-2 border-purple-400 text-xs uppercase transition-transform active:scale-95">
+        <div class="flex items-center gap-2 md:gap-4">
+            <button id="btn-joker" onclick="useJoker()" class="hidden bg-purple-600 hover:bg-purple-500 text-white font-black px-3 py-2 rounded-xl shadow-lg border-2 border-purple-400 text-xs uppercase transition-transform active:scale-95">
                 🃏 50/50
             </button>
-            <div class="text-right">
+            <div class="text-right ml-2">
                 <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest leading-none mb-1">Score</p>
                 <p id="my-score" class="font-black text-2xl text-yellow-400 leading-none transition-all duration-500">0</p>
             </div>
         </div>
     </div>
 
-    <div id="q-container" class="hidden px-4 mt-8 mb-6 z-0 w-full max-w-4xl mx-auto text-center">
-        <h2 id="q-text" class="text-2xl md:text-4xl font-black text-white drop-shadow-md leading-tight"></h2>
+    <div id="q-container" class="hidden px-4 mt-8 mb-6 z-10 w-full max-w-4xl mx-auto text-center relative">
+        <h2 id="q-text" class="text-2xl md:text-4xl font-black text-white drop-shadow-md leading-tight transition-all duration-300"></h2>
     </div>
 
-    <div id="msg" class="flex-grow flex flex-col items-center justify-center text-3xl font-black text-center italic uppercase p-6 animate-pulse z-0">
+    <div id="msg" class="flex-grow flex flex-col items-center justify-center text-3xl font-black text-center italic uppercase p-6 animate-pulse z-10 relative">
         Chargement...
     </div>
     
-    <div id="grid" class="hidden grid-cols-1 md:grid-cols-2 gap-4 h-[70%] pb-6 px-4 w-full max-w-4xl mx-auto z-0 overflow-y-auto">
-        <button id="opt1-btn" onclick="submitAns(1)" class="bg-red-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#991b1b] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
-            <span class="text-5xl md:text-6xl drop-shadow-md mr-6">▲</span>
-            <span id="opt1-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
-        </button>
-        <button id="opt2-btn" onclick="submitAns(2)" class="bg-blue-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#1e40af] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
-            <span class="text-5xl md:text-6xl drop-shadow-md mr-6">◆</span>
-            <span id="opt2-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
-        </button>
-        <button id="opt3-btn" onclick="submitAns(3)" class="bg-yellow-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#854d0e] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
-            <span class="text-5xl md:text-6xl drop-shadow-md mr-6">●</span>
-            <span id="opt3-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
-        </button>
-        <button id="opt4-btn" onclick="submitAns(4)" class="bg-green-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#166534] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
-            <span class="text-5xl md:text-6xl drop-shadow-md mr-6">■</span>
-            <span id="opt4-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
-        </button>
+    <div id="grid-wrapper" class="relative hidden h-[70%] pb-6 px-4 w-full max-w-4xl mx-auto z-10">
+        <div id="grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 h-full overflow-y-auto transition-all duration-300">
+            <button id="opt1-btn" onclick="submitAns(1)" class="bg-red-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#991b1b] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
+                <span class="text-5xl md:text-6xl drop-shadow-md mr-6">▲</span>
+                <span id="opt1-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
+            </button>
+            <button id="opt2-btn" onclick="submitAns(2)" class="bg-blue-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#1e40af] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
+                <span class="text-5xl md:text-6xl drop-shadow-md mr-6">◆</span>
+                <span id="opt2-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
+            </button>
+            <button id="opt3-btn" onclick="submitAns(3)" class="bg-yellow-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#854d0e] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
+                <span class="text-5xl md:text-6xl drop-shadow-md mr-6">●</span>
+                <span id="opt3-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
+            </button>
+            <button id="opt4-btn" onclick="submitAns(4)" class="bg-green-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#166534] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
+                <span class="text-5xl md:text-6xl drop-shadow-md mr-6">■</span>
+                <span id="opt4-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
+            </button>
+        </div>
     </div>
 
     <script>
@@ -77,12 +78,10 @@
                     const me = data.players.find(p => p.nickname === nick);
                     if(me) {
                         isMemberCache = me.is_member;
-                        
                         if(!document.getElementById('my-avatar').innerHTML.includes('img')) {
                             let zAura = (me.aura == 1 || me.aura == 5) ? 30 : 5;
                             let auraHtml = me.aura > 0 ? `<img src="personnage/aura/aura${me.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura};">` : '';
                             let badge = me.is_member ? `<div class="absolute -bottom-1 -right-1 bg-yellow-400 text-black text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white z-40 shadow-sm" title="VIP">★</div>` : '';
-                            
                             document.getElementById('my-avatar').innerHTML = `${auraHtml}<div class="relative w-full h-full overflow-hidden rounded-full flex items-end justify-center"><img src="personnage/tenue/tenue${me.outfit}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;"><img src="personnage/cheveux/cheveux${me.hair}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;"></div>${badge}`;
                         }
                     }
@@ -94,13 +93,11 @@
                     document.getElementById('player-nick').innerText = nick;
                 }
 
-                // CORRECTION DU SCORE : On fige l'affichage si le joueur a répondu et que le temps n'est pas écoulé
                 if(data.scores && data.scores[nick] !== undefined) {
-                    if (!(data.status === 'playing' && answered)) {
+                    if (data.status === 'show_answer' || data.status === 'leaderboard' || data.status === 'finished') {
                         let scoreEl = document.getElementById('my-score');
                         if (scoreEl.innerText !== data.scores[nick].toString()) {
                             scoreEl.innerText = data.scores[nick];
-                            // Petit effet visuel quand le score monte
                             scoreEl.classList.add('scale-125', 'text-white');
                             setTimeout(() => scoreEl.classList.remove('scale-125', 'text-white'), 300);
                         }
@@ -148,8 +145,7 @@
                         
                         document.getElementById('q-container').classList.remove('hidden');
                         document.getElementById('msg').classList.add('hidden');
-                        document.getElementById('grid').classList.remove('hidden');
-                        document.getElementById('grid').classList.add('grid', 'md:grid-cols-2');
+                        document.getElementById('grid-wrapper').classList.remove('hidden');
                         
                         if (isMemberCache && !localStorage.getItem('joker_used_' + pin)) {
                             document.getElementById('btn-joker').classList.remove('hidden');
@@ -188,13 +184,11 @@
 
         function hidePlayingUI() {
             document.getElementById('q-container').classList.add('hidden');
-            document.getElementById('grid').classList.add('hidden');
-            document.getElementById('grid').classList.remove('grid', 'md:grid-cols-2');
+            document.getElementById('grid-wrapper').classList.add('hidden');
         }
 
         function useJoker() {
             if (localStorage.getItem('joker_used_' + pin) || answered) return;
-            
             localStorage.setItem('joker_used_' + pin, 'true');
             document.getElementById('btn-joker').classList.add('hidden');
             

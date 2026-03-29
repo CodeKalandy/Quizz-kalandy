@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="images/logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Bernard Quizz - Accueil</title>
 </head>
@@ -30,7 +31,7 @@
                 Se connecter
             </a>
             <a href="register.php" class="text-center text-gray-500 text-sm hover:underline">
-                Créer un compte créateur
+                Créer un compte 
             </a>
         </div>
     </div>

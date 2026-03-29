@@ -1,5 +1,4 @@
 <?php
-// CETTE LIGNE EST CRUCIALE : Elle empêche PHP d'écrire des erreurs HTML qui cassent le JSON
 ini_set('display_errors', 0); 
 require_once 'db.php';
 header('Content-Type: application/json');
@@ -20,6 +19,8 @@ if (file_exists($gameStateFile)) {
         'players' => [], 
         'scores' => new stdClass(), 
         'correct_counts' => new stdClass(), 
+        'wrong_counts' => new stdClass(),
+        'response_times' => new stdClass(),
         'streaks' => new stdClass(), 
         'answers' => new stdClass(), 
         'status' => 'lobby', 
@@ -48,13 +49,10 @@ switch ($action) {
             $scoresArr[$nick] = 0;
             $state['scores'] = (object)$scoresArr;
             
-            $correctCounts = (array)($state['correct_counts'] ?? []);
-            $correctCounts[$nick] = 0;
-            $state['correct_counts'] = (object)$correctCounts;
-
-            $streaks = (array)($state['streaks'] ?? []);
-            $streaks[$nick] = 0;
-            $state['streaks'] = (object)$streaks;
+            $state['correct_counts'] = (object)array_merge((array)($state['correct_counts'] ?? []), [$nick => 0]);
+            $state['wrong_counts'] = (object)array_merge((array)($state['wrong_counts'] ?? []), [$nick => 0]);
+            $state['response_times'] = (object)array_merge((array)($state['response_times'] ?? []), [$nick => 0]);
+            $state['streaks'] = (object)array_merge((array)($state['streaks'] ?? []), [$nick => 0]);
         }
         break;
 
@@ -71,6 +69,8 @@ switch ($action) {
         $state['answers'] = new stdClass();
         $state['eliminated'] = [];
         $state['correct_counts'] = new stdClass(); 
+        $state['wrong_counts'] = new stdClass();
+        $state['response_times'] = new stdClass();
         $state['streaks'] = new stdClass(); 
         break;
 
@@ -95,6 +95,11 @@ switch ($action) {
             $allAnswers[$qIdx] = (object)$currentQAnswers;
             $state['answers'] = (object)$allAnswers;
 
+            $timeTaken = (float)($input['response_time'] ?? 0);
+            $rtArr = (array)($state['response_times'] ?? []);
+            $rtArr[$nick] = ($rtArr[$nick] ?? 0) + $timeTaken;
+            $state['response_times'] = (object)$rtArr;
+
             $isCorrect = filter_var($input['is_correct'] ?? false, FILTER_VALIDATE_BOOLEAN);
             $qList = (array)($state['questions_list'] ?? []);
             $isLastQuestion = ($qIdx === count($qList) - 1);
@@ -108,9 +113,7 @@ switch ($action) {
                 $currentStreak++;
                 $streaks[$nick] = $currentStreak;
 
-                $timeTaken = (float)($input['response_time'] ?? 0);
                 $pts = max(500, 1000 - (int)($timeTaken * 50));
-                
                 if ($isLastQuestion) { $pts *= 2; }
                 if ($currentStreak >= 3) { $pts += 200; }
 
@@ -124,6 +127,10 @@ switch ($action) {
             } else {
                 $pdo->prepare("UPDATE users SET total_wrong = total_wrong + 1 WHERE username = ?")->execute([$nick]);
                 $streaks[$nick] = 0;
+
+                $wrongCounts = (array)($state['wrong_counts'] ?? []);
+                $wrongCounts[$nick] = ($wrongCounts[$nick] ?? 0) + 1;
+                $state['wrong_counts'] = (object)$wrongCounts;
             }
             $state['streaks'] = (object)$streaks;
         }
@@ -136,7 +143,6 @@ switch ($action) {
         $allAnswers = (array)($state['answers'] ?? []);
         $currentQAnswers = (array)($allAnswers[$qIdx] ?? []);
         
-        // CORRECTION DU DECALAGE DES VOTES
         $counts = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
         foreach($currentQAnswers as $n => $ansIndex) {
             if(isset($counts[$ansIndex])) { $counts[$ansIndex]++; }

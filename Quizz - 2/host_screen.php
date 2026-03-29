@@ -34,7 +34,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
         </button>
     </div>
 
-    <div class="flex-grow flex flex-col items-center justify-center p-6 relative z-10 w-full h-full">
+    <div id="main-area" class="flex-grow flex flex-col items-center justify-center p-6 relative z-10 w-full h-full">
         
         <div id="x2-badge" class="hidden text-red-500 font-black text-3xl md:text-5xl uppercase animate-bounce mb-6 bg-white px-6 py-2 rounded-2xl shadow-xl">
             🚨 COMPTE DOUBLE ! 🚨
@@ -56,7 +56,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
 
         <div id="leaderboard" class="w-full h-full flex flex-col items-center justify-start pt-10 pb-4 hidden">
             <h3 id="leaderboard-title" class="text-5xl font-black text-center mb-8 uppercase text-yellow-400 tracking-widest relative z-30"></h3>
-            <div id="players-list" class="w-full h-full flex items-end justify-center mt-10"></div>
+            <div id="players-list" class="w-full h-full flex items-end justify-center mt-10 relative"></div>
         </div>
 
     </div>
@@ -355,7 +355,29 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                     </li>`;
             });
             statsHtml += `</ul></div>`;
-            html += statsHtml + `</div>`;
+            html += statsHtml;
+
+            let eclair = '', tortue = '', miracule = '';
+            let minTime = 9999, maxTime = 0, maxWrong = 0;
+            
+            data.players.forEach(p => {
+                let n = p.nickname;
+                let time = data.response_times ? (data.response_times[n] || 0) : 0;
+                let c = data.correct_counts ? (data.correct_counts[n] || 0) : 0;
+                let w = data.wrong_counts ? (data.wrong_counts[n] || 0) : 0;
+                
+                if (c > 0 && time > 0 && time < minTime) { minTime = time; eclair = n; }
+                if (time > maxTime) { maxTime = time; tortue = n; }
+                if (w > maxWrong && (!data.eliminated || !data.eliminated.includes(n))) { maxWrong = w; miracule = n; }
+            });
+
+            let awardsHtml = `<div class="absolute top-4 md:top-10 left-1/2 transform -translate-x-1/2 flex flex-wrap justify-center gap-4 opacity-0 animate-pop-in z-50" style="animation-delay: 18s;">`;
+            if (eclair) awardsHtml += `<div class="bg-blue-600 border-2 border-blue-300 text-white px-6 py-2 rounded-2xl shadow-lg text-center"><p class="text-[10px] uppercase font-bold text-blue-200">⚡ L'éclair</p><p class="font-black text-xl">${eclair}</p></div>`;
+            if (tortue) awardsHtml += `<div class="bg-green-700 border-2 border-green-400 text-white px-6 py-2 rounded-2xl shadow-lg text-center"><p class="text-[10px] uppercase font-bold text-green-300">🐌 La Tortue</p><p class="font-black text-xl">${tortue}</p></div>`;
+            if (miracule) awardsHtml += `<div class="bg-purple-600 border-2 border-purple-300 text-white px-6 py-2 rounded-2xl shadow-lg text-center"><p class="text-[10px] uppercase font-bold text-purple-200">🍀 Le Miraculé</p><p class="font-black text-xl">${miracule}</p></div>`;
+            awardsHtml += `</div>`;
+            
+            html += awardsHtml + `</div>`;
 
             document.getElementById('players-list').innerHTML = html;
 
