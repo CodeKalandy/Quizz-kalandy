@@ -30,6 +30,7 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
         
         <div class="preview-container shadow-inner border-4 border-indigo-100 flex items-end justify-center" id="char-wrapper">
             <div id="prev-aura-container"></div>
+            <div id="prev-effect-container"></div>
             <div class="relative w-full h-full overflow-hidden rounded-[15px] flex items-end justify-center z-10">
                 <img id="prev-outfit" src="personnage/tenue/tenue1.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;">
                 <img id="prev-hair" src="personnage/cheveux/cheveux1.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;">
@@ -74,21 +75,26 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
                 </div>
                 <div class="flex flex-wrap justify-center gap-2 py-1">
                     <div onclick="setAura(0)" class="w-12 h-12 md:w-14 md:h-14 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer font-bold text-gray-400">Ø</div>
-                    
                     <?php for($i=1; $i<=5; $i++): $locked = ($is_member === 'false'); ?>
                         <div onclick="setAura(<?= $i ?>)" class="relative w-12 h-12 md:w-14 md:h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1 <?= $locked ? 'opacity-60 grayscale' : '' ?>">
                             <img src="personnage/aura/aura<?= $i ?>.png" class="w-full h-full object-contain">
                             <?php if($locked): ?><div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10 rounded-xl"><span class="text-xl drop-shadow-md">🔒</span></div><?php endif; ?>
                         </div>
                     <?php endfor; ?>
+                </div>
+            </div>
 
-                    <div onclick="alert('Bientôt ! Débloqué via une quête secrète...')" class="relative w-12 h-12 md:w-14 md:h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all flex items-center justify-center text-2xl opacity-60 grayscale">
-                        🌈
-                        <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-xl"><span class="text-xl drop-shadow-md">🔒</span></div>
+            <div>
+                <div class="flex justify-center items-center mb-2 gap-2">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Effet Spécial</p>
+                </div>
+                <div class="flex flex-wrap justify-center gap-2 py-1">
+                    <div onclick="setEffect(0)" class="w-12 h-12 md:w-14 md:h-14 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer font-bold text-gray-400">Ø</div>
+                    <div onclick="alert('Bientôt ! Débloqué via les quêtes du Profil...')" class="relative w-12 h-12 md:w-14 md:h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all flex items-center justify-center text-2xl opacity-60 grayscale">
+                        🌈<div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-xl"><span class="text-xl drop-shadow-md">🔒</span></div>
                     </div>
-                    <div onclick="alert('Bientôt ! Débloqué via une quête secrète...')" class="relative w-12 h-12 md:w-14 md:h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all flex items-center justify-center text-2xl opacity-60 grayscale">
-                        ☁️
-                        <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-xl"><span class="text-xl drop-shadow-md">🔒</span></div>
+                    <div onclick="alert('Bientôt ! Débloqué via les quêtes du Profil...')" class="relative w-12 h-12 md:w-14 md:h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all flex items-center justify-center text-2xl opacity-60 grayscale">
+                        ☁️<div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-xl"><span class="text-xl drop-shadow-md">🔒</span></div>
                     </div>
                 </div>
             </div>
@@ -96,12 +102,16 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
             <button onclick="join()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg transform active:scale-95 transition-all uppercase tracking-widest">
                 C'est parti !
             </button>
+            
+            <p class="text-center text-xs text-gray-400 mt-4 font-bold">
+                Avatars générés grâce aux assets de <a href="https://pinknose.me" target="_blank" class="text-indigo-400 hover:underline">pinknose.me</a>
+            </p>
         </div>
     </div>
 
     <script>
         const isMember = <?= $is_member ?>;
-        let hair = 1, outfit = 1, aura = 0;
+        let hair = 1, outfit = 1, aura = 0, effect = 0;
 
         function setHair(id) { 
             if (!isMember && id > 5) return alert("Cette coiffure est réservée aux VIP !");
@@ -115,14 +125,20 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
             if (!isMember && id > 0) return alert("Les auras sont réservées aux VIP !");
             aura = id; 
             const cont = document.getElementById('prev-aura-container');
-            const wrap = document.getElementById('char-wrapper');
-            wrap.classList.remove('aura-float');
-            
             if(id === 0) { cont.innerHTML = ''; }
             else if(id <= 5) {
                 let zIndex = (id == 1 || id == 5) ? 30 : 5;
                 cont.innerHTML = `<img src="personnage/aura/aura${id}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zIndex};">`;
             }
+        }
+        function setEffect(id) {
+            effect = id;
+            const cont = document.getElementById('prev-effect-container');
+            const wrap = document.getElementById('char-wrapper');
+            wrap.classList.remove('aura-float');
+            if(id === 0) { cont.innerHTML = ''; }
+            else if (id === 1) { cont.innerHTML = `<div class="aura-rainbow"></div>`; }
+            else if (id === 2) { cont.innerHTML = ''; wrap.classList.add('aura-float'); }
         }
 
         function join() {
@@ -132,7 +148,7 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
 
             fetch(`api_live.php?action=join&pin=<?= htmlspecialchars($pin) ?>`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nickname: nick, hair: hair, outfit: outfit, aura: aura, is_member: isMember })
+                body: JSON.stringify({ nickname: nick, hair: hair, outfit: outfit, aura: aura, effect: effect, is_member: isMember })
             }).then(async r => {
                 if(!r.ok) throw new Error("Erreur serveur");
                 return JSON.parse(await r.text());

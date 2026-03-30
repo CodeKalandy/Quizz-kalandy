@@ -24,7 +24,7 @@ if (file_exists($gameStateFile)) {
         'streaks' => new stdClass(), 
         'hearts' => new stdClass(),
         'answers' => new stdClass(),
-        'chat' => [], // 💬 NOUVEAU : Historique du tchat
+        'chat' => [],
         'status' => 'lobby', 
         'current_q_index' => -1, 
         'last_update' => time()
@@ -44,6 +44,7 @@ switch ($action) {
                 'hair' => (int)($input['hair'] ?? 1),
                 'outfit' => (int)($input['outfit'] ?? 1),
                 'aura' => (int)($input['aura'] ?? 0),
+                'effect' => (int)($input['effect'] ?? 0), // NOUVEAU : Effet Lévitation/Arc-en-ciel
                 'is_member' => filter_var($input['is_member'] ?? false, FILTER_VALIDATE_BOOLEAN)
             ];
             $state['players'] = $players;
@@ -74,7 +75,7 @@ switch ($action) {
         $state['wrong_counts'] = new stdClass();
         $state['response_times'] = new stdClass();
         $state['streaks'] = new stdClass(); 
-        $state['chat'] = []; // On vide le tchat au début
+        $state['chat'] = []; 
         
         $hearts = [];
         foreach($state['players'] as $p) { $hearts[$p['nickname']] = 3; }
@@ -85,7 +86,6 @@ switch ($action) {
         $state['status'] = 'playing';
         break;
 
-    // 💬 NOUVEAU : Envoi d'un message dans le Tchat
     case 'send_chat':
         $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $nick = htmlspecialchars($input['nickname'] ?? '');
@@ -94,7 +94,6 @@ switch ($action) {
         if ($nick && $msg) {
             $chat = (array)($state['chat'] ?? []);
             $chat[] = ['nick' => $nick, 'msg' => $msg, 'time' => time()];
-            // On ne garde que les 20 derniers messages pour pas alourdir
             if (count($chat) > 20) { array_shift($chat); }
             $state['chat'] = $chat;
         }
