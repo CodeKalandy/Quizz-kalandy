@@ -309,6 +309,7 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
         const hairStyles = ['very_short', 'short', 'medium', 'long', 'shaved'];
         const maxHairByType = { 'very_short': 15, 'short': 17, 'medium': 18, 'long': 21, 'shaved': 6 };
 
+        // Mises à jour des chemins (path) vers Jacket/Men/
         let state = {
             skin: { type: 1, colorIdx: 0, maxType: 1, hasColor: true, colors: skinColors, path: "Skin/1" },
             eyes: { type: 1, colorIdx: 0, maxType: 27, hasColor: false, path: "Eyes" },
@@ -324,13 +325,13 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             top: { type: 1, colorIdx: 0, maxType: 20, hasColor: true, colors: clothesColors, path: "Top/Men" },
             jacket: { type: 0, colorIdx: 0, maxType: 19, hasColor: true, colors: clothesColors, path: "Jacket/Men" }, 
             
-            antiquity: { type: 0, colorIdx: 0, maxType: 9, hasColor: false, path: "Antiquity/Men" },
-            christmas: { type: 0, colorIdx: 0, maxType: 12, hasColor: false, path: "Christmas/Men" },
-            halloween: { type: 0, colorIdx: 0, maxType: 7, hasColor: false, path: "Halloween/Men" },
-            job: { type: 0, colorIdx: 0, maxType: 17, hasColor: false, path: "Job/Men" },
-            medieval: { type: 0, colorIdx: 0, maxType: 23, hasColor: false, path: "Medieval/Men" },
-            neutral: { type: 0, colorIdx: 0, maxType: 4, hasColor: false, path: "Neutral/Men" },
-            pirate: { type: 0, colorIdx: 0, maxType: 6, hasColor: false, path: "Pirate/Men" },
+            antiquity: { type: 0, colorIdx: 0, maxType: 9, hasColor: false, path: "Jacket/Men/Antiquity/Men" },
+            christmas: { type: 0, colorIdx: 0, maxType: 12, hasColor: false, path: "Jacket/Men/Christmas/Men" },
+            halloween: { type: 0, colorIdx: 0, maxType: 7, hasColor: false, path: "Jacket/Men/Halloween/Men" },
+            job: { type: 0, colorIdx: 0, maxType: 17, hasColor: false, path: "Jacket/Men/Job/Men" },
+            medieval: { type: 0, colorIdx: 0, maxType: 23, hasColor: false, path: "Jacket/Men/Medieval/Men" },
+            neutral: { type: 0, colorIdx: 0, maxType: 4, hasColor: false, path: "Jacket/Men/Neutral/Men" },
+            pirate: { type: 0, colorIdx: 0, maxType: 6, hasColor: false, path: "Jacket/Men/Pirate/Men" },
 
             aura: { type: 0, colorIdx: 0, maxType: 5, hasColor: false },
             effect: { type: 0, colorIdx: 0, maxType: 5, hasColor: false }
@@ -367,7 +368,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 elFront.src = `${basePath}Hair/Front/${style}/${data.type}/${colorCode}.png`;
                 elBack.src = `${basePath}Hair/Back/${style}/${data.type}/${colorCode}.png`;
                 
-                // Fallback de sécurité si un numéro est sauté dans les fichiers
                 elFront.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
                 elBack.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
                 return;
@@ -400,7 +400,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
 
             el.src = finalUrl;
             
-            // Fallback de sécurité (très utile pour Antiquité par exemple)
             el.onerror = function() {
                 this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; 
             };
