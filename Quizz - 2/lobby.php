@@ -40,7 +40,7 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
     <div class="fixed top-10 left-10 text-7xl text-white/5 font-black z-0 pointer-events-none">✦</div>
     <div class="fixed bottom-20 right-20 text-9xl text-white/5 font-black z-0 pointer-events-none">⬢</div>
 
-    <div class="relative z-10 w-full max-w-6xl">
+    <div class="relative z-10 w-full max-w-5xl">
         <h1 class="text-3xl font-black mb-6 uppercase tracking-widest text-center text-yellow-400 mt-4 drop-shadow-lg" style="font-family: 'Caveat', cursive; font-size: 2.5rem;">Crée ton Bernard</h1>
 
         <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl shadow-2xl w-full border border-white/20">
@@ -49,23 +49,18 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 <img id="layer-aura" src="" class="layer" style="z-index: 0;">
                 <img id="layer-hair-back" src="" class="layer" style="z-index: 5;">
                 <img id="layer-skin" src="" class="layer" style="z-index: 10;">
-                <img id="layer-spot" src="" class="layer" style="z-index: 15;">
+                
                 <img id="layer-mouth" src="" class="layer" style="z-index: 20;">
                 <img id="layer-eyes" src="" class="layer" style="z-index: 21;">
                 <img id="layer-eyebrow" src="" class="layer" style="z-index: 22;">
                 <img id="layer-nose" src="" class="layer" style="z-index: 23;">
+                
                 <img id="layer-beard" src="" class="layer" style="z-index: 25;">
                 <img id="layer-mustache" src="" class="layer" style="z-index: 26;">
                 <img id="layer-top" src="" class="layer" style="z-index: 30;">
                 <img id="layer-jacket" src="" class="layer" style="z-index: 31;">
                 
-                <img id="layer-antiquity" src="" class="layer" style="z-index: 32;">
-                <img id="layer-medieval" src="" class="layer" style="z-index: 33;">
-                <img id="layer-neutral" src="" class="layer" style="z-index: 34;">
-                <img id="layer-job" src="" class="layer" style="z-index: 35;">
-                <img id="layer-pirate" src="" class="layer" style="z-index: 36;">
-                <img id="layer-halloween" src="" class="layer" style="z-index: 37;">
-                <img id="layer-christmas" src="" class="layer" style="z-index: 38;">
+                <img id="layer-special" src="" class="layer" style="z-index: 38;">
                 
                 <img id="layer-hair-front" src="" class="layer" style="z-index: 40;">
                 <img id="layer-effect" src="" class="layer" style="z-index: 50;">
@@ -74,10 +69,10 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             <input type="text" id="nick" maxlength="12" placeholder="TON PSEUDO" value="<?= htmlspecialchars($default_nick) ?>"
                    class="max-w-md mx-auto block w-full p-4 bg-white/90 border-none rounded-2xl font-black text-center text-indigo-900 focus:ring-4 focus:ring-yellow-400 outline-none transition-all mb-6 shadow-inner">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
                 <div class="space-y-3">
-                    <h2 class="text-2xl font-bold text-yellow-400 mb-4 text-center font-caveat border-b border-yellow-400/30 pb-2">Visage & Corps</h2>
+                    <h2 class="text-2xl font-bold text-yellow-400 mb-4 text-center font-caveat border-b border-yellow-400/30 pb-2">Personnage</h2>
                     
                     <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
                         <span class="text-xs font-black text-indigo-900 uppercase w-20">Peau</span>
@@ -88,60 +83,7 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                        <span class="text-xs font-black text-indigo-900 uppercase w-20">Yeux</span>
-                        <div class="flex gap-2 items-center">
-                            <button onclick="changeLayer('eyes', 'type', -1)" class="arrow-btn">◀</button>
-                            <span id="lbl-eyes-type" class="text-sm font-bold w-6 text-center text-indigo-600">1</span>
-                            <button onclick="changeLayer('eyes', 'type', 1)" class="arrow-btn">▶</button>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                        <span class="text-xs font-black text-indigo-900 uppercase w-20">Bouche</span>
-                        <div class="flex gap-2 items-center">
-                            <button onclick="changeLayer('mouth', 'type', -1)" class="arrow-btn">◀</button>
-                            <span id="lbl-mouth-type" class="text-sm font-bold w-6 text-center text-indigo-600">1</span>
-                            <button onclick="changeLayer('mouth', 'type', 1)" class="arrow-btn">▶</button>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                        <span class="text-xs font-black text-indigo-900 uppercase w-20">Nez</span>
-                        <div class="flex gap-2 items-center">
-                            <button onclick="changeLayer('nose', 'type', -1)" class="arrow-btn">◀</button>
-                            <span id="lbl-nose-type" class="text-sm font-bold w-6 text-center text-indigo-600">1</span>
-                            <button onclick="changeLayer('nose', 'type', 1)" class="arrow-btn">▶</button>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                        <span class="text-xs font-black text-indigo-900 uppercase w-20">Sourcils</span>
-                        <div class="flex gap-1 items-center">
-                            <button onclick="changeLayer('eyebrow', 'type', -1)" class="arrow-btn">◀</button>
-                            <span id="lbl-eyebrow-type" class="text-sm font-bold w-4 text-center text-indigo-600">Ø</span>
-                            <button onclick="changeLayer('eyebrow', 'type', 1)" class="arrow-btn">▶</button>
-                        </div>
-                        <div class="flex gap-1 items-center border-l-2 border-indigo-100 pl-1">
-                            <button onclick="changeLayer('eyebrow', 'color', -1)" class="arrow-btn !bg-pink-100 !text-pink-600">◀</button>
-                            <button onclick="changeLayer('eyebrow', 'color', 1)" class="arrow-btn !bg-pink-100 !text-pink-600">▶</button>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                        <span class="text-xs font-black text-indigo-900 uppercase w-20">Taches</span>
-                        <div class="flex gap-2 items-center">
-                            <button onclick="changeLayer('spot', 'type', -1)" class="arrow-btn">◀</button>
-                            <span id="lbl-spot-type" class="text-sm font-bold w-6 text-center text-indigo-600">Ø</span>
-                            <button onclick="changeLayer('spot', 'type', 1)" class="arrow-btn">▶</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <h2 class="text-2xl font-bold text-yellow-400 mb-4 text-center font-caveat border-b border-yellow-400/30 pb-2">Pilosité</h2>
-                    
-                    <div class="bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm space-y-2">
+                    <div class="bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm space-y-2 mt-2">
                         <span class="text-xs font-black text-indigo-900 uppercase block">Cheveux</span>
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] text-gray-500 uppercase">Longueur</span>
@@ -152,7 +94,7 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                             </div>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="text-[10px] text-gray-500 uppercase">Type & Coul.</span>
+                            <span class="text-[10px] text-gray-500 uppercase">Coupe & Coul.</span>
                             <div class="flex gap-1 items-center">
                                 <button onclick="changeLayer('hair', 'type', -1)" class="arrow-btn !py-1 !px-2">◀</button>
                                 <span id="lbl-hair-type" class="text-xs font-bold w-4 text-center text-indigo-600">1</span>
@@ -164,6 +106,10 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="space-y-3">
+                    <h2 class="text-2xl font-bold text-yellow-400 mb-4 text-center font-caveat border-b border-yellow-400/30 pb-2">Pilosité</h2>
 
                     <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
                         <span class="text-xs font-black text-indigo-900 uppercase w-20">Barbe</span>
@@ -221,58 +167,34 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                            <span class="text-[10px] font-black text-indigo-900 uppercase w-12">Noël</span>
-                            <button onclick="changeLayer('christmas', 'type', -1)" class="arrow-btn !py-1 !px-2">◀</button>
-                            <span id="lbl-christmas-type" class="text-xs font-bold w-4 text-center text-indigo-600">Ø</span>
-                            <button onclick="changeLayer('christmas', 'type', 1)" class="arrow-btn !py-1 !px-2">▶</button>
+                    <div class="bg-indigo-100/90 p-2 rounded-xl border border-indigo-200 shadow-sm space-y-2 mt-2">
+                        <span class="text-xs font-black text-indigo-900 uppercase block text-center border-b border-indigo-200 pb-1">Costume Spécial</span>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] text-gray-600 uppercase font-bold">Thème</span>
+                            <div class="flex gap-1 items-center">
+                                <button onclick="changeLayer('special', 'theme', -1)" class="arrow-btn !py-1 !px-2">◀</button>
+                                <span id="lbl-special-theme" class="text-[10px] font-black w-16 text-center text-indigo-700 uppercase">AUCUN</span>
+                                <button onclick="changeLayer('special', 'theme', 1)" class="arrow-btn !py-1 !px-2">▶</button>
+                            </div>
                         </div>
-                        <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                            <span class="text-[10px] font-black text-indigo-900 uppercase w-12">Hallow.</span>
-                            <button onclick="changeLayer('halloween', 'type', -1)" class="arrow-btn !py-1 !px-2">◀</button>
-                            <span id="lbl-halloween-type" class="text-xs font-bold w-4 text-center text-indigo-600">Ø</span>
-                            <button onclick="changeLayer('halloween', 'type', 1)" class="arrow-btn !py-1 !px-2">▶</button>
-                        </div>
-                        <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                            <span class="text-[10px] font-black text-indigo-900 uppercase w-12">Pirate</span>
-                            <button onclick="changeLayer('pirate', 'type', -1)" class="arrow-btn !py-1 !px-2">◀</button>
-                            <span id="lbl-pirate-type" class="text-xs font-bold w-4 text-center text-indigo-600">Ø</span>
-                            <button onclick="changeLayer('pirate', 'type', 1)" class="arrow-btn !py-1 !px-2">▶</button>
-                        </div>
-                        <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                            <span class="text-[10px] font-black text-indigo-900 uppercase w-12">Médiéval</span>
-                            <button onclick="changeLayer('medieval', 'type', -1)" class="arrow-btn !py-1 !px-2">◀</button>
-                            <span id="lbl-medieval-type" class="text-xs font-bold w-4 text-center text-indigo-600">Ø</span>
-                            <button onclick="changeLayer('medieval', 'type', 1)" class="arrow-btn !py-1 !px-2">▶</button>
-                        </div>
-                        <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                            <span class="text-[10px] font-black text-indigo-900 uppercase w-12">Antiquité</span>
-                            <button onclick="changeLayer('antiquity', 'type', -1)" class="arrow-btn !py-1 !px-2">◀</button>
-                            <span id="lbl-antiquity-type" class="text-xs font-bold w-4 text-center text-indigo-600">Ø</span>
-                            <button onclick="changeLayer('antiquity', 'type', 1)" class="arrow-btn !py-1 !px-2">▶</button>
-                        </div>
-                        <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                            <span class="text-[10px] font-black text-indigo-900 uppercase w-12">Métier</span>
-                            <button onclick="changeLayer('job', 'type', -1)" class="arrow-btn !py-1 !px-2">◀</button>
-                            <span id="lbl-job-type" class="text-xs font-bold w-4 text-center text-indigo-600">Ø</span>
-                            <button onclick="changeLayer('job', 'type', 1)" class="arrow-btn !py-1 !px-2">▶</button>
-                        </div>
-                        <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm col-span-2">
-                            <span class="text-[10px] font-black text-indigo-900 uppercase w-16">Neutre</span>
-                            <div class="flex gap-2">
-                                <button onclick="changeLayer('neutral', 'type', -1)" class="arrow-btn !py-1 !px-2">◀</button>
-                                <span id="lbl-neutral-type" class="text-xs font-bold w-4 text-center text-indigo-600">Ø</span>
-                                <button onclick="changeLayer('neutral', 'type', 1)" class="arrow-btn !py-1 !px-2">▶</button>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] text-gray-600 uppercase font-bold">Variante</span>
+                            <div class="flex gap-1 items-center">
+                                <button onclick="changeLayer('special', 'type', -1)" class="arrow-btn !py-1 !px-2">◀</button>
+                                <span id="lbl-special-type" class="text-xs font-black w-16 text-center text-indigo-700">Ø</span>
+                                <button onclick="changeLayer('special', 'type', 1)" class="arrow-btn !py-1 !px-2">▶</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-span-1 md:col-span-2 lg:col-span-3 mt-4 border-t border-white/20 pt-4">
+                <div class="col-span-1 md:col-span-3 mt-2 border-t border-white/20 pt-4">
                     <h2 class="text-2xl font-bold text-yellow-400 mb-4 text-center font-caveat">Auras & Effets</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                        <div class="flex items-center justify-between bg-yellow-100 p-3 rounded-xl border border-yellow-300 shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                        
+                        <div class="flex items-center justify-between bg-yellow-100 p-3 rounded-xl border border-yellow-300 shadow-sm h-[68px]">
                             <span class="text-sm font-black text-yellow-800 uppercase w-20">Aura</span>
                             <div class="flex gap-2 items-center">
                                 <button onclick="changeLayer('aura', 'type', -1)" class="arrow-btn !bg-yellow-200 hover:!bg-yellow-300">◀</button>
@@ -280,14 +202,20 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                                 <button onclick="changeLayer('aura', 'type', 1)" class="arrow-btn !bg-yellow-200 hover:!bg-yellow-300">▶</button>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between bg-purple-100 p-3 rounded-xl border border-purple-300 shadow-sm">
-                            <span class="text-sm font-black text-purple-800 uppercase w-20">Effet</span>
-                            <div class="flex gap-2 items-center">
-                                <button onclick="changeLayer('effect', 'type', -1)" class="arrow-btn !bg-purple-200 hover:!bg-purple-300">◀</button>
-                                <span id="lbl-effect-type" class="text-sm font-bold w-6 text-center text-purple-800">Ø</span>
-                                <button onclick="changeLayer('effect', 'type', 1)" class="arrow-btn !bg-purple-200 hover:!bg-purple-300">▶</button>
+
+                        <div class="flex flex-col bg-purple-100 p-2 rounded-xl border border-purple-300 shadow-sm justify-center h-[68px]">
+                            <div class="flex items-center justify-between w-full mb-1">
+                                <span class="text-sm font-black text-purple-800 uppercase w-16">Effet</span>
+                                <span id="lbl-effect-name" class="text-[11px] font-black text-purple-600 uppercase truncate px-2">AUCUN</span>
+                                <div class="flex gap-1 items-center">
+                                    <button onclick="changeLayer('effect', 'type', -1)" class="arrow-btn !bg-purple-200 hover:!bg-purple-300 !py-1 !px-2">◀</button>
+                                    <span id="lbl-effect-type" class="text-xs font-bold w-4 text-center text-purple-800">Ø</span>
+                                    <button onclick="changeLayer('effect', 'type', 1)" class="arrow-btn !bg-purple-200 hover:!bg-purple-300 !py-1 !px-2">▶</button>
+                                </div>
                             </div>
+                            <span id="lbl-effect-desc" class="text-[10px] text-center text-purple-500 font-semibold italic truncate w-full"></span>
                         </div>
+
                     </div>
                 </div>
 
@@ -309,30 +237,36 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
         const hairStyles = ['very_short', 'short', 'medium', 'long', 'shaved'];
         const maxHairByType = { 'very_short': 15, 'short': 17, 'medium': 18, 'long': 21, 'shaved': 6 };
 
-        // Mises à jour des chemins (path) vers Jacket/Men/
+        // Configuration de la nouvelle catégorie "Spécial"
+        const specialThemes = [
+            { key: "none", name: "Aucun", path: "", max: 0 },
+            { key: "neutral", name: "Neutre", path: "Jacket/Men/Neutral/Men", max: 4 },
+            { key: "job", name: "Métier", path: "Jacket/Men/Job/Men", max: 17 },
+            { key: "antiquity", name: "Antiquité", path: "Jacket/Men/Antiquity/Men", max: 9 },
+            { key: "medieval", name: "Médiéval", path: "Jacket/Men/Medieval/Men", max: 23 },
+            { key: "pirate", name: "Pirate", path: "Jacket/Men/Pirate/Men", max: 6 },
+            { key: "halloween", name: "Halloween", path: "Jacket/Men/Halloween/Men", max: 7 },
+            { key: "christmas", name: "Noël", path: "Jacket/Men/Christmas/Men", max: 12 }
+        ];
+
+        // Configuration des textes pour la catégorie "Effet"
+        const effectDetails = [
+            { name: "Aucun", desc: "" },
+            { name: "Arc-en-Ciel", desc: "Participer à 10 parties. (1/10)" },
+            { name: "Lévitation", desc: "Remporter 3 médailles d'or 🥇. (0/3)" },
+            { name: "Effet 3", desc: "À débloquer..." },
+            { name: "Effet 4", desc: "À débloquer..." },
+            { name: "Effet 5", desc: "À débloquer..." }
+        ];
+
         let state = {
             skin: { type: 1, colorIdx: 0, maxType: 1, hasColor: true, colors: skinColors, path: "Skin/1" },
-            eyes: { type: 1, colorIdx: 0, maxType: 27, hasColor: false, path: "Eyes" },
-            mouth: { type: 1, colorIdx: 0, maxType: 21, hasColor: false, path: "Mouth" },
-            nose: { type: 1, colorIdx: 0, maxType: 15, hasColor: false, path: "Nose" },
-            eyebrow: { type: 0, colorIdx: 0, maxType: 17, hasColor: true, colors: commonColors, path: "Eyebrow" },
-            spot: { type: 0, colorIdx: 0, maxType: 13, hasColor: false, path: "Spot" },
-            
             hair: { type: 1, colorIdx: 0, maxType: 15, hasColor: true, colors: commonColors, styleIdx: 0 }, 
             beard: { type: 0, colorIdx: 0, maxType: 11, hasColor: true, colors: commonColors, path: "Beards" },
             mustache: { type: 0, colorIdx: 0, maxType: 11, hasColor: true, colors: commonColors, path: "Mustaches" },
-            
             top: { type: 1, colorIdx: 0, maxType: 20, hasColor: true, colors: clothesColors, path: "Top/Men" },
             jacket: { type: 0, colorIdx: 0, maxType: 19, hasColor: true, colors: clothesColors, path: "Jacket/Men" }, 
-            
-            antiquity: { type: 0, colorIdx: 0, maxType: 9, hasColor: false, path: "Jacket/Men/Antiquity/Men" },
-            christmas: { type: 0, colorIdx: 0, maxType: 12, hasColor: false, path: "Jacket/Men/Christmas/Men" },
-            halloween: { type: 0, colorIdx: 0, maxType: 7, hasColor: false, path: "Jacket/Men/Halloween/Men" },
-            job: { type: 0, colorIdx: 0, maxType: 17, hasColor: false, path: "Jacket/Men/Job/Men" },
-            medieval: { type: 0, colorIdx: 0, maxType: 23, hasColor: false, path: "Jacket/Men/Medieval/Men" },
-            neutral: { type: 0, colorIdx: 0, maxType: 4, hasColor: false, path: "Jacket/Men/Neutral/Men" },
-            pirate: { type: 0, colorIdx: 0, maxType: 6, hasColor: false, path: "Jacket/Men/Pirate/Men" },
-
+            special: { themeIdx: 0, type: 0 }, 
             aura: { type: 0, colorIdx: 0, maxType: 5, hasColor: false },
             effect: { type: 0, colorIdx: 0, maxType: 5, hasColor: false }
         };
@@ -343,6 +277,40 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             const lblColor = document.getElementById(`lbl-${category}-color`);
             const lblStyle = document.getElementById(`lbl-${category}-style`);
             
+            // Gestion de l'affichage de la catégorie unique Spécial
+            if (category === 'special') {
+                let theme = specialThemes[data.themeIdx];
+                document.getElementById('lbl-special-theme').innerText = theme.name;
+                
+                if (data.themeIdx === 0 || data.type === 0) {
+                    document.getElementById('layer-special').src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+                    document.getElementById('lbl-special-type').innerText = "Ø";
+                } else {
+                    document.getElementById('lbl-special-type').innerText = data.type;
+                    let elSpecial = document.getElementById('layer-special');
+                    elSpecial.src = `${basePath}${theme.path}/${data.type}.png`;
+                    elSpecial.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
+                }
+                return;
+            }
+
+            // Gestion de l'affichage des textes pour la catégorie Effet
+            if (category === 'effect') {
+                let effectInfo = effectDetails[data.type] || effectDetails[0];
+                document.getElementById('lbl-effect-type').innerText = data.type === 0 ? "Ø" : data.type;
+                document.getElementById('lbl-effect-name').innerText = effectInfo.name;
+                document.getElementById('lbl-effect-desc').innerText = effectInfo.desc;
+                
+                let elEffect = document.getElementById(`layer-effect`);
+                if (data.type === 0) {
+                    elEffect.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+                } else {
+                    elEffect.src = `personnage/effets/effet${data.type}.png`;
+                    elEffect.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
+                }
+                return;
+            }
+
             if (data.type === 0) {
                 if (category === 'hair') {
                     document.getElementById('layer-hair-front').src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
@@ -378,12 +346,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 elAura.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
                 return;
             }
-            if (category === 'effect') {
-                let elEffect = document.getElementById(`layer-effect`);
-                elEffect.src = `personnage/effets/effet${data.type}.png`;
-                elEffect.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
-                return;
-            }
 
             const el = document.getElementById(`layer-${category}`);
             let finalUrl = `${basePath}${data.path}`;
@@ -399,18 +361,31 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             }
 
             el.src = finalUrl;
-            
-            el.onerror = function() {
-                this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; 
-            };
+            el.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
         }
 
         function changeLayer(category, prop, direction) {
             let data = state[category];
             
+            if (category === 'special') {
+                if (prop === 'theme') {
+                    data.themeIdx += direction;
+                    if (data.themeIdx >= specialThemes.length) data.themeIdx = 0;
+                    if (data.themeIdx < 0) data.themeIdx = specialThemes.length - 1;
+                    data.type = (data.themeIdx === 0) ? 0 : 1; 
+                } else if (prop === 'type' && data.themeIdx > 0) {
+                    data.type += direction;
+                    let max = specialThemes[data.themeIdx].max;
+                    if (data.type > max) data.type = 1;
+                    if (data.type < 1) data.type = max;
+                }
+                updateVisual(category);
+                return;
+            }
+
             if (prop === 'type') {
                 data.type += direction;
-                let min = ['skin', 'eyes', 'mouth', 'nose', 'top'].includes(category) ? 1 : 0;
+                let min = ['skin', 'top'].includes(category) ? 1 : 0;
                 if (data.type > data.maxType) data.type = min;
                 if (data.type < min) data.type = data.maxType;
             } 
@@ -431,6 +406,13 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
         }
 
         window.onload = () => {
+            // Rendu strict des éléments du visage basiques (non modifiables dans l'UI)
+            document.getElementById('layer-eyes').src = `${basePath}Eyes/1.png`;
+            document.getElementById('layer-mouth').src = `${basePath}Mouth/1.png`;
+            document.getElementById('layer-nose').src = `${basePath}Nose/1.png`;
+            document.getElementById('layer-eyebrow').src = `${basePath}Eyebrow/1/1.png`;
+
+            // Initialisation des autres éléments
             Object.keys(state).forEach(cat => updateVisual(cat));
         };
 
@@ -441,17 +423,25 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             const payload = {
                 nickname: nick,
                 skin: state.skin.type, skinColor: state.skin.colorIdx,
-                eyes: state.eyes.type, mouth: state.mouth.type, nose: state.nose.type,
-                eyebrow: state.eyebrow.type, eyebrowColor: state.eyebrow.colorIdx, spot: state.spot.type,
+                // On fixe automatiquement les paramètres du visage pour le backend
+                eyes: 1, mouth: 1, nose: 1, eyebrow: 1, eyebrowColor: 0, spot: 0,
+                
                 hair: state.hair.type, hairColor: state.hair.colorIdx, hairStyle: state.hair.styleIdx,
                 beard: state.beard.type, beardColor: state.beard.colorIdx,
                 mustache: state.mustache.type, mustacheColor: state.mustache.colorIdx,
                 top: state.top.type, topColor: state.top.colorIdx,
                 jacket: state.jacket.type, jacketColor: state.jacket.colorIdx,
-                antiquity: state.antiquity.type, christmas: state.christmas.type, halloween: state.halloween.type,
-                job: state.job.type, medieval: state.medieval.type, neutral: state.neutral.type, pirate: state.pirate.type,
+                
+                // On remet tous les spéciaux à 0 par défaut
+                antiquity: 0, christmas: 0, halloween: 0, job: 0, medieval: 0, neutral: 0, pirate: 0,
                 aura: state.aura.type, effect: state.effect.type
             };
+
+            // On écrase la valeur uniquement pour le costume spécial sélectionné
+            if (state.special.themeIdx > 0 && state.special.type > 0) {
+                let themeKey = specialThemes[state.special.themeIdx].key;
+                payload[themeKey] = state.special.type;
+            }
 
             fetch(`api_live?action=join&pin=<?= htmlspecialchars($pin) ?>`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
