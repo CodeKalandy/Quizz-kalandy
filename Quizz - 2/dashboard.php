@@ -1,15 +1,27 @@
 <?php
 require_once 'db.php';
+
+// Sécurisation de la page
 if (!isset($_SESSION['user_id'])) {
-    header("Location: index");
+    header('Location: login');
     exit;
 }
 
-$role = $_SESSION['role'] ?? 'joueur';
+$user_id = $_SESSION['user_id'];
 $username = htmlspecialchars($_SESSION['username']);
 
-$stmt = $pdo->query("SELECT * FROM quizzes ORDER BY created_at DESC");
-$quizzes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Récupérer le rôle de l'utilisateur pour gérer les permissions d'affichage
+$stmtRole = $pdo->prepare("SELECT role FROM users WHERE id = ?");
+$stmtRole->execute([$user_id]);
+$user_role = $stmtRole->fetchColumn();
+
+// Autorisation de création
+$can_create_quiz = in_array($user_role, ['createur', 'admin', 'fondateur']);
+
+// Récupérer le nombre de quizz de ce user
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM quizzes WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$quiz_count = $stmt->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -17,96 +29,117 @@ $quizzes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>Tableau de Bord - Bernard Quizz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <title>Bernard Quizz - Mon Espace</title>
     <style>
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
-        .animate-float { animation: float 3s ease-in-out infinite; }
+        /* === THEME GLOBAL (GAME UI) === */
+        body {
+            margin: 0; padding: 0; width: 100vw; min-height: 100vh; overflow-x: hidden;
+            background-color: #0f172a; 
+            background-image: 
+                radial-gradient(at 0% 0%, #1e1b4b 0px, transparent 50%),
+                radial-gradient(at 100% 100%, #312e81 0px, transparent 50%);
+            background-attachment: fixed; color: white; font-family: sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        
+        .game-card {
+            background-color: #1e1b4b; border: 4px solid #312e81; border-radius: 2rem;
+            box-shadow: 0 8px 0 0 #0b0f19; transition: transform 0.2s;
+        }
+
+        .title-text { font-family: 'Caveat', cursive; text-shadow: 3px 3px 0px #312e81; letter-spacing: 2px; }
+
+        /* Boutons de Menu Dashboard */
+        .dash-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 1.5rem; font-weight: 900; text-transform: uppercase;
+            padding: 2rem 1rem; width: 100%; transition: all 0.1s; letter-spacing: 1px;
+            cursor: pointer; text-shadow: 2px 2px 0px rgba(0,0,0,0.3); text-align: center;
+            height: 100%;
+        }
+        .dash-btn:active { transform: translateY(8px); box-shadow: 0 0px 0 0 rgba(0,0,0,0.5) !important; }
+
+        .btn-green { background-color: #10b981; border: 4px solid #047857; box-shadow: 0 8px 0 0 #064e3b; color: white; }
+        .btn-green:hover { background-color: #34d399; }
+
+        .btn-blue { background-color: #3b82f6; border: 4px solid #1d4ed8; box-shadow: 0 8px 0 0 #1e3a8a; color: white; }
+        .btn-blue:hover { background-color: #60a5fa; }
+
+        .btn-yellow { background-color: #facc15; border: 4px solid #ca8a04; box-shadow: 0 8px 0 0 #854d0e; color: #422006; text-shadow: none; }
+        .btn-yellow:hover { background-color: #fde047; }
+
+        .btn-purple { background-color: #9333ea; border: 4px solid #6b21a8; box-shadow: 0 8px 0 0 #581c87; color: white; }
+        .btn-purple:hover { background-color: #a855f7; }
+
+        .particle { position: fixed; background: rgba(255,255,255,0.02); border-radius: 50%; animation: drift infinite linear; pointer-events: none; z-index: 0; }
+        @keyframes drift { from { transform: translateY(100vh) rotate(0deg); } to { transform: translateY(-100vh) rotate(360deg); } }
     </style>
 </head>
-<body class="bg-indigo-900 font-sans text-white min-h-screen p-4 md:p-8 relative overflow-x-hidden">
-    
-    <div class="fixed top-10 left-10 text-7xl text-white/5 font-black z-0 pointer-events-none">✦</div>
-    <div class="fixed bottom-20 right-20 text-9xl text-white/5 font-black z-0 pointer-events-none">⬢</div>
-    
-    <div class="max-w-6xl mx-auto relative z-10">
+<body class="p-4 md:p-8 relative">
+
+    <div class="particle" style="width: 150px; height: 150px; left: 10%; animation-duration: 25s;"></div>
+    <div class="particle" style="width: 250px; height: 250px; left: 80%; animation-duration: 35s;"></div>
+    <div class="particle" style="width: 80px; height: 80px; left: 50%; animation-duration: 20s;"></div>
+
+    <div class="relative z-10 w-full max-w-5xl flex flex-col items-center mt-4">
         
-        <div class="flex flex-col md:flex-row justify-between items-center bg-white/10 backdrop-blur-md p-6 rounded-3xl shadow-2xl border border-white/20 mb-8">
+        <div class="w-full flex flex-col md:flex-row items-center justify-between game-card p-6 md:p-8 mb-8">
             <div class="flex items-center gap-6 mb-4 md:mb-0">
-                <img src="images/logo.png" alt="Logo" class="h-16 animate-float" onerror="this.style.display='none'">
+                <div class="w-24 md:w-32 flex items-center justify-center" style="aspect-ratio: 819/654;">
+                    <img src="images/logo.png" alt="Bernard Quizz" class="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
+                </div>
                 <div>
-                    <h1 class="text-3xl font-black text-yellow-400 uppercase tracking-widest">Bonjour, <?= $username ?> !</h1>
-                    <p class="text-xs font-bold text-indigo-300 uppercase tracking-widest bg-indigo-950/50 inline-block px-3 py-1 rounded-full mt-1">
-                        Rôle : <?= $role ?>
-                    </p>
+                    <p class="text-indigo-400 font-black text-sm uppercase tracking-widest">Bienvenue,</p>
+                    <h1 class="title-text text-4xl text-white"><?= $username ?></h1>
                 </div>
             </div>
-            <div class="flex gap-3">
-                <a href="profil" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-6 py-3 rounded-2xl shadow-lg transition transform hover:scale-105 border border-indigo-400">👤 Ma Vitrine</a>
-                <a href="logout" class="bg-red-500/20 hover:bg-red-500/40 text-red-300 hover:text-red-100 font-bold px-6 py-3 rounded-2xl transition border border-red-500/30">Déconnexion</a>
+            <div>
+                <a href="logout" class="bg-red-500 border-4 border-red-700 text-white px-6 py-3 rounded-xl font-black uppercase tracking-wider shadow-[0_6px_0_0_#7f1d1d] hover:bg-red-400 transition-all active:translate-y-2 active:shadow-none inline-block">
+                    Déconnexion 🚪
+                </a>
             </div>
         </div>
 
-        <?php if ($role === 'createur' || $role === 'admin'): ?>
-            <div class="bg-yellow-400 p-1 rounded-3xl shadow-xl mb-10 transform rotate-1 hover:rotate-0 transition duration-300">
-                <div class="bg-indigo-900 p-6 rounded-[22px] border border-yellow-400 border-dashed">
-                    <h2 class="text-2xl font-black text-yellow-400 uppercase tracking-widest mb-4 flex items-center gap-3">
-                        <span class="text-3xl">🛠️</span> Espace Administration
-                    </h2>
-                    <div class="flex flex-wrap gap-4">
-                        <a href="manage_quizzes" class="bg-yellow-400 hover:bg-yellow-300 text-indigo-900 font-black px-6 py-3 rounded-xl shadow-md transition uppercase text-sm tracking-wide">
-                            Gérer mes Quiz
-                        </a>
-                        <?php if ($role === 'admin'): ?>
-                            <a href="admin_users" class="bg-indigo-500 hover:bg-indigo-400 text-white font-black px-6 py-3 rounded-xl shadow-md transition uppercase text-sm tracking-wide border border-indigo-300">
-                                Gérer les Utilisateurs
-                            </a>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl shadow-2xl border border-white/20 mb-10 max-w-xl mx-auto">
-            <h2 class="text-xl font-black text-white uppercase tracking-widest mb-4 text-center">🎮 Rejoindre une partie</h2>
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="pin-code" placeholder="CODE PIN (6 CHIFFRES)" maxlength="6" 
-                       class="flex-grow p-4 text-center text-2xl font-black text-indigo-900 bg-white rounded-2xl outline-none focus:ring-4 focus:ring-yellow-400 tracking-[0.2em] shadow-inner">
-                <button onclick="joinWithPin()" class="bg-yellow-400 hover:bg-yellow-300 text-indigo-900 font-black px-8 py-4 rounded-2xl transition shadow-[0_4px_0_0_#ca8a04] active:shadow-none active:translate-y-1 uppercase tracking-widest">
-                    GO !
-                </button>
-            </div>
-        </div>
-
-        <h2 class="text-3xl font-black text-white uppercase tracking-widest mb-6 border-b border-indigo-500/50 pb-4">🎮 Héberger une partie</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <?php foreach ($quizzes as $q): ?>
-                <div class="bg-white/5 backdrop-blur-sm rounded-3xl shadow-lg p-6 flex flex-col h-full transform transition hover:-translate-y-2 hover:bg-white/10 border border-white/10 hover:border-indigo-400">
-                    <h3 class="text-2xl font-black text-yellow-300 mb-3 leading-tight"><?= htmlspecialchars($q['title']) ?></h3>
-                    <p class="text-indigo-200 text-sm mb-8 flex-grow leading-relaxed"><?= htmlspecialchars($q['description']) ?></p>
-                    <a href="host_game?quiz_id=<?= $q['id'] ?>" class="text-center bg-white text-indigo-900 font-black py-4 rounded-xl hover:bg-indigo-50 transition shadow-[0_4px_0_0_#a5b4fc] active:shadow-none active:translate-y-1 w-full uppercase tracking-widest text-sm">
-                        Héberger ce Quiz
-                    </a>
-                </div>
-            <?php endforeach; ?>
+        <div class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-<?= $can_create_quiz ? '4' : '3' ?> gap-6 mb-12 max-w-4xl mx-auto">
             
-            <?php if (empty($quizzes)): ?>
-                <div class="col-span-full bg-indigo-900/50 border border-indigo-500/30 rounded-3xl p-10 text-center">
-                    <p class="text-indigo-300 italic text-lg font-bold">Aucun quiz n'a encore été créé. L'espace de jeu est vide !</p>
-                </div>
+            <a href="host_game" class="dash-btn btn-green">
+                <span class="text-4xl mb-2">🚀</span>
+                <span class="text-xl">Lancer<br>une partie</span>
+            </a>
+
+            <a href="manage_quizzes" class="dash-btn btn-blue">
+                <span class="text-4xl mb-2">📂</span>
+                <span class="text-xl">Gérer<br>mes Quizz</span>
+                <span class="mt-2 text-xs bg-blue-900/50 px-3 py-1 rounded-full border border-blue-400"><?= $quiz_count ?> créés</span>
+            </a>
+
+            <?php if ($can_create_quiz): ?>
+            <a href="edit_quiz" class="dash-btn btn-yellow">
+                <span class="text-4xl mb-2">✏️</span>
+                <span class="text-xl">Créer<br>un Quizz</span>
+            </a>
             <?php endif; ?>
+
+            <a href="profil" class="dash-btn btn-purple">
+                <span class="text-4xl mb-2">👤</span>
+                <span class="text-xl">Mon<br>Profil</span>
+            </a>
+
         </div>
+
     </div>
 
-    <script>
-        function joinWithPin() {
-            const pin = document.getElementById('pin-code').value.trim();
-            if (pin.length === 6) {
-                window.location.href = "lobby?pin=" + pin;
-            } else {
-                alert("Veuillez entrer un code PIN valide à 6 chiffres.");
-            }
-        }
-    </script>
+    <div class="mt-auto pt-12 pb-4 w-full text-center text-[10px] md:text-xs font-bold tracking-widest uppercase text-indigo-300/50 z-20 pointer-events-auto px-4 relative">
+        <div class="flex justify-center gap-4 md:gap-8 mb-2">
+            <a href="documentation" class="hover:text-yellow-400 transition-colors">Documentation</a>
+            <a href="mentions_legales" class="hover:text-yellow-400 transition-colors">Mentions Légales & CGU</a>
+        </div>
+        <p class="leading-tight">
+            Création des personnages basée sur le projet open-source pinknose.me<br>
+            © 2026 Bernard Quizz. Tous droits réservés.
+        </p>
+    </div>
+
 </body>
 </html>
