@@ -14,7 +14,7 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
     <style>
         /* === THEME GLOBAL (GAME UI) === */
         body {
-            background-color: #0f172a; /* Deep Slate */
+            background-color: #0f172a; 
             background-image: 
                 radial-gradient(at 0% 0%, #1e1b4b 0px, transparent 50%),
                 radial-gradient(at 100% 100%, #312e81 0px, transparent 50%);
@@ -37,6 +37,7 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             border: 6px solid #facc15;
             box-shadow: 0 8px 0 0 #ca8a04, inset 0 8px 20px rgba(0,0,0,0.5);
             overflow: visible; 
+            transition: all 0.3s ease;
         }
         .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; object-fit: contain; }
         
@@ -59,9 +60,11 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
         
         /* Les Boutons d'action type "Jeux Vidéo" */
         .arrow-btn { 
-            background-color: #3b82f6; color: white; padding: 0.2rem 0.6rem; border-radius: 0.5rem; 
+            display: flex; align-items: center; justify-content: center;
+            background-color: #3b82f6; color: white; padding: 0.4rem 0.6rem; border-radius: 0.5rem; 
             font-weight: 900; transition: transform 0.1s, box-shadow 0.1s; 
             box-shadow: 0 4px 0 0 #1d4ed8; 
+            cursor: pointer;
         }
         .arrow-btn:active { transform: translateY(4px); box-shadow: 0 0px 0 0 #1d4ed8; }
         
@@ -81,9 +84,25 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
         .join-btn:hover { background-color: #34d399; }
         .join-btn:active { transform: translateY(8px); box-shadow: 0 0px 0 0 #064e3b; }
 
-        /* Animations Fun */
+        /* === ANIMATIONS & EFFETS === */
         .floating { animation: float 3.5s ease-in-out infinite; }
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+
+        .effect-levitation { animation: levitate-strong 2s ease-in-out infinite !important; }
+        @keyframes levitate-strong {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-25px) scale(1.05); }
+        }
+
+        .effect-rainbow { animation: rainbow-glow 3s linear infinite !important; }
+        @keyframes rainbow-glow {
+            0% { border-color: #ef4444; box-shadow: 0 8px 0 0 #991b1b, 0 0 25px #ef4444; }
+            20% { border-color: #f59e0b; box-shadow: 0 8px 0 0 #92400e, 0 0 25px #f59e0b; }
+            40% { border-color: #eab308; box-shadow: 0 8px 0 0 #854d0e, 0 0 25px #eab308; }
+            60% { border-color: #10b981; box-shadow: 0 8px 0 0 #065f46, 0 0 25px #10b981; }
+            80% { border-color: #3b82f6; box-shadow: 0 8px 0 0 #1e40af, 0 0 25px #3b82f6; }
+            100% { border-color: #ef4444; box-shadow: 0 8px 0 0 #991b1b, 0 0 25px #ef4444; }
+        }
 
         .particle {
             position: absolute; background: rgba(255,255,255,0.03); border-radius: 50%;
@@ -106,23 +125,27 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             </div>
             
             <div class="preview-container floating mb-6 mt-4" id="char-wrapper">
-                <img id="layer-aura" src="" class="layer" style="z-index: 0;">
                 <img id="layer-hair-back" src="" class="layer" style="z-index: 5;">
+                
                 <img id="layer-skin" src="" class="layer" style="z-index: 10;">
                 
-                <img id="layer-mouth" src="" class="layer" style="z-index: 20;">
-                <img id="layer-eyes" src="" class="layer" style="z-index: 21;">
-                <img id="layer-eyebrow" src="" class="layer" style="z-index: 22;">
-                <img id="layer-nose" src="" class="layer" style="z-index: 23;">
+                <img id="layer-top" src="" class="layer" style="z-index: 20;">
                 
-                <img id="layer-beard" src="" class="layer" style="z-index: 25;">
-                <img id="layer-mustache" src="" class="layer" style="z-index: 26;">
-                <img id="layer-top" src="" class="layer" style="z-index: 30;">
-                <img id="layer-jacket" src="" class="layer" style="z-index: 31;">
+                <img id="layer-jacket" src="" class="layer" style="z-index: 30;">
+                <img id="layer-special" src="" class="layer" style="z-index: 31;">
                 
-                <img id="layer-special" src="" class="layer" style="z-index: 38;">
-                <img id="layer-hair-front" src="" class="layer" style="z-index: 40;">
-                <img id="layer-effect" src="" class="layer" style="z-index: 50;">
+                <img id="layer-beard" src="" class="layer" style="z-index: 40;">
+                <img id="layer-mustache" src="" class="layer" style="z-index: 41;">
+                
+                <img id="layer-mouth" src="" class="layer" style="z-index: 50;">
+                <img id="layer-eyes" src="" class="layer" style="z-index: 51;">
+                <img id="layer-eyebrow" src="" class="layer" style="z-index: 52;">
+                <img id="layer-nose" src="" class="layer" style="z-index: 53;">
+                <img id="layer-hair-front" src="" class="layer" style="z-index: 54;">
+                
+                <img id="layer-aura" src="" class="layer" style="z-index: 60;">
+                
+                <img id="layer-effect" src="" class="layer" style="z-index: 70;">
             </div>
 
             <input type="text" id="nick" maxlength="12" placeholder="TON PSEUDO" value="<?= htmlspecialchars($default_nick) ?>"
@@ -137,9 +160,13 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 <div class="control-row">
                     <span class="control-label">Peau</span>
                     <div class="flex gap-1 items-center">
-                        <button onclick="changeLayer('skin', 'color', -1)" class="arrow-btn pink">◀</button>
+                        <button onclick="changeLayer('skin', 'color', -1)" class="arrow-btn pink">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
                         <span id="lbl-skin-color" class="val-display">1</span>
-                        <button onclick="changeLayer('skin', 'color', 1)" class="arrow-btn pink">▶</button>
+                        <button onclick="changeLayer('skin', 'color', 1)" class="arrow-btn pink">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
                     </div>
                 </div>
 
@@ -149,22 +176,34 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] text-indigo-400 font-bold uppercase">Style</span>
                         <div class="flex gap-1 items-center">
-                            <button onclick="changeLayer('hair', 'style', -1)" class="arrow-btn !py-1">◀</button>
+                            <button onclick="changeLayer('hair', 'style', -1)" class="arrow-btn !py-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
                             <span id="lbl-hair-style" class="val-display !w-20 text-[10px]">COURT</span>
-                            <button onclick="changeLayer('hair', 'style', 1)" class="arrow-btn !py-1">▶</button>
+                            <button onclick="changeLayer('hair', 'style', 1)" class="arrow-btn !py-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
                         </div>
                     </div>
                     
                     <div class="flex items-center justify-between">
                         <span class="text-[10px] text-indigo-400 font-bold uppercase">Coupe</span>
                         <div class="flex gap-1 items-center">
-                            <button onclick="changeLayer('hair', 'type', -1)" class="arrow-btn !py-1">◀</button>
+                            <button onclick="changeLayer('hair', 'type', -1)" class="arrow-btn !py-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
                             <span id="lbl-hair-type" class="val-display text-xs !w-6">1</span>
-                            <button onclick="changeLayer('hair', 'type', 1)" class="arrow-btn !py-1">▶</button>
+                            <button onclick="changeLayer('hair', 'type', 1)" class="arrow-btn !py-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
                         </div>
                         <div class="flex gap-1 items-center border-l-2 border-[#3b3687] pl-1">
-                            <button onclick="changeLayer('hair', 'color', -1)" class="arrow-btn pink !py-1">◀</button>
-                            <button onclick="changeLayer('hair', 'color', 1)" class="arrow-btn pink !py-1">▶</button>
+                            <button onclick="changeLayer('hair', 'color', -1)" class="arrow-btn pink !py-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
+                            <button onclick="changeLayer('hair', 'color', 1)" class="arrow-btn pink !py-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -176,49 +215,73 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 <div class="control-row">
                     <span class="control-label text-[10px]">Barbe</span>
                     <div class="flex gap-1 items-center">
-                        <button onclick="changeLayer('beard', 'type', -1)" class="arrow-btn !py-1">◀</button>
+                        <button onclick="changeLayer('beard', 'type', -1)" class="arrow-btn !py-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
                         <span id="lbl-beard-type" class="val-display !w-4 text-xs">Ø</span>
-                        <button onclick="changeLayer('beard', 'type', 1)" class="arrow-btn !py-1">▶</button>
+                        <button onclick="changeLayer('beard', 'type', 1)" class="arrow-btn !py-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
                     </div>
                     <div class="flex gap-1 items-center border-l-2 border-[#3b3687] pl-1">
-                        <button onclick="changeLayer('beard', 'color', -1)" class="arrow-btn pink !py-1">◀</button>
-                        <button onclick="changeLayer('beard', 'color', 1)" class="arrow-btn pink !py-1">▶</button>
+                        <button onclick="changeLayer('beard', 'color', -1)" class="arrow-btn pink !py-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <button onclick="changeLayer('beard', 'color', 1)" class="arrow-btn pink !py-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
                     </div>
                 </div>
 
                 <div class="control-row">
                     <span class="control-label text-[10px]">Moust.</span>
                     <div class="flex gap-1 items-center">
-                        <button onclick="changeLayer('mustache', 'type', -1)" class="arrow-btn !py-1">◀</button>
+                        <button onclick="changeLayer('mustache', 'type', -1)" class="arrow-btn !py-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
                         <span id="lbl-mustache-type" class="val-display !w-4 text-xs">Ø</span>
-                        <button onclick="changeLayer('mustache', 'type', 1)" class="arrow-btn !py-1">▶</button>
+                        <button onclick="changeLayer('mustache', 'type', 1)" class="arrow-btn !py-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
                     </div>
                     <div class="flex gap-1 items-center border-l-2 border-[#3b3687] pl-1">
-                        <button onclick="changeLayer('mustache', 'color', -1)" class="arrow-btn pink !py-1">◀</button>
-                        <button onclick="changeLayer('mustache', 'color', 1)" class="arrow-btn pink !py-1">▶</button>
+                        <button onclick="changeLayer('mustache', 'color', -1)" class="arrow-btn pink !py-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <button onclick="changeLayer('mustache', 'color', 1)" class="arrow-btn pink !py-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
                     </div>
                 </div>
 
                 <div class="control-row mt-3 !bg-yellow-900/30 !border-yellow-700/50">
                     <span class="control-label text-yellow-500">Aura</span>
                     <div class="flex gap-1 items-center">
-                        <button onclick="changeLayer('aura', 'type', -1)" class="arrow-btn !bg-yellow-600 !shadow-[0_4px_0_0_#a16207]">◀</button>
+                        <button onclick="changeLayer('aura', 'type', -1)" class="arrow-btn !bg-yellow-600 !shadow-[0_4px_0_0_#a16207]">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
                         <span id="lbl-aura-type" class="val-display text-yellow-200">Ø</span>
-                        <button onclick="changeLayer('aura', 'type', 1)" class="arrow-btn !bg-yellow-600 !shadow-[0_4px_0_0_#a16207]">▶</button>
+                        <button onclick="changeLayer('aura', 'type', 1)" class="arrow-btn !bg-yellow-600 !shadow-[0_4px_0_0_#a16207]">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
                     </div>
                 </div>
 
-                <div class="bg-purple-900/30 p-2 rounded-xl border-2 border-purple-700/50">
+                <div class="bg-purple-900/30 p-2 rounded-xl border-2 border-purple-700/50 mt-3">
                     <div class="flex items-center justify-between mb-1">
                         <span class="control-label text-purple-400">Effet</span>
                         <span id="lbl-effect-name" class="text-[10px] font-black text-purple-300 uppercase truncate px-1">AUCUN</span>
                         <div class="flex gap-1 items-center">
-                            <button onclick="changeLayer('effect', 'type', -1)" class="arrow-btn !bg-purple-600 !shadow-[0_4px_0_0_#7e22ce] !py-0.5">◀</button>
+                            <button onclick="changeLayer('effect', 'type', -1)" class="arrow-btn !bg-purple-600 !shadow-[0_4px_0_0_#7e22ce] !py-0.5">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
                             <span id="lbl-effect-type" class="val-display text-purple-100 !w-4 text-xs">Ø</span>
-                            <button onclick="changeLayer('effect', 'type', 1)" class="arrow-btn !bg-purple-600 !shadow-[0_4px_0_0_#7e22ce] !py-0.5">▶</button>
+                            <button onclick="changeLayer('effect', 'type', 1)" class="arrow-btn !bg-purple-600 !shadow-[0_4px_0_0_#7e22ce] !py-0.5">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
                         </div>
                     </div>
-                    <div id="lbl-effect-desc" class="text-[9px] text-center text-purple-400 font-semibold italic truncate w-full"></div>
+                    <div id="lbl-effect-desc" class="text-[9px] text-center text-purple-400 font-semibold italic truncate w-full h-3"></div>
                 </div>
             </div>
 
@@ -228,26 +291,42 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 <div class="control-row">
                     <span class="control-label">T-Shirt</span>
                     <div class="flex gap-1 items-center">
-                        <button onclick="changeLayer('top', 'type', -1)" class="arrow-btn">◀</button>
+                        <button onclick="changeLayer('top', 'type', -1)" class="arrow-btn">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
                         <span id="lbl-top-type" class="val-display">1</span>
-                        <button onclick="changeLayer('top', 'type', 1)" class="arrow-btn">▶</button>
+                        <button onclick="changeLayer('top', 'type', 1)" class="arrow-btn">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
                     </div>
                     <div class="flex gap-1 items-center border-l-2 border-[#3b3687] pl-1">
-                        <button onclick="changeLayer('top', 'color', -1)" class="arrow-btn pink">◀</button>
-                        <button onclick="changeLayer('top', 'color', 1)" class="arrow-btn pink">▶</button>
+                        <button onclick="changeLayer('top', 'color', -1)" class="arrow-btn pink">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <button onclick="changeLayer('top', 'color', 1)" class="arrow-btn pink">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
                     </div>
                 </div>
 
                 <div class="control-row">
                     <span class="control-label">Veste</span>
                     <div class="flex gap-1 items-center">
-                        <button onclick="changeLayer('jacket', 'type', -1)" class="arrow-btn">◀</button>
+                        <button onclick="changeLayer('jacket', 'type', -1)" class="arrow-btn">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
                         <span id="lbl-jacket-type" class="val-display">Ø</span>
-                        <button onclick="changeLayer('jacket', 'type', 1)" class="arrow-btn">▶</button>
+                        <button onclick="changeLayer('jacket', 'type', 1)" class="arrow-btn">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
                     </div>
                     <div class="flex gap-1 items-center border-l-2 border-[#3b3687] pl-1">
-                        <button onclick="changeLayer('jacket', 'color', -1)" class="arrow-btn pink">◀</button>
-                        <button onclick="changeLayer('jacket', 'color', 1)" class="arrow-btn pink">▶</button>
+                        <button onclick="changeLayer('jacket', 'color', -1)" class="arrow-btn pink">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <button onclick="changeLayer('jacket', 'color', 1)" class="arrow-btn pink">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
                     </div>
                 </div>
 
@@ -257,18 +336,26 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] text-teal-200 font-bold uppercase">Thème</span>
                         <div class="flex gap-1 items-center">
-                            <button onclick="changeLayer('special', 'theme', -1)" class="arrow-btn !bg-teal-600 !shadow-[0_4px_0_0_#0f766e] !py-1">◀</button>
+                            <button onclick="changeLayer('special', 'theme', -1)" class="arrow-btn !bg-teal-600 !shadow-[0_4px_0_0_#0f766e] !py-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
                             <span id="lbl-special-theme" class="val-display !w-20 text-[10px] text-teal-100">AUCUN</span>
-                            <button onclick="changeLayer('special', 'theme', 1)" class="arrow-btn !bg-teal-600 !shadow-[0_4px_0_0_#0f766e] !py-1">▶</button>
+                            <button onclick="changeLayer('special', 'theme', 1)" class="arrow-btn !bg-teal-600 !shadow-[0_4px_0_0_#0f766e] !py-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
                         </div>
                     </div>
                     
                     <div class="flex items-center justify-between">
                         <span class="text-[10px] text-teal-200 font-bold uppercase">Variante</span>
                         <div class="flex gap-1 items-center">
-                            <button onclick="changeLayer('special', 'type', -1)" class="arrow-btn !bg-teal-600 !shadow-[0_4px_0_0_#0f766e] !py-1">◀</button>
+                            <button onclick="changeLayer('special', 'type', -1)" class="arrow-btn !bg-teal-600 !shadow-[0_4px_0_0_#0f766e] !py-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
                             <span id="lbl-special-type" class="val-display text-xs text-teal-100">Ø</span>
-                            <button onclick="changeLayer('special', 'type', 1)" class="arrow-btn !bg-teal-600 !shadow-[0_4px_0_0_#0f766e] !py-1">▶</button>
+                            <button onclick="changeLayer('special', 'type', 1)" class="arrow-btn !bg-teal-600 !shadow-[0_4px_0_0_#0f766e] !py-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -346,19 +433,19 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 return;
             }
 
+            // GESTION DES EFFETS CSS MAGIC
             if (category === 'effect') {
                 let effectInfo = effectDetails[data.type] || effectDetails[0];
                 document.getElementById('lbl-effect-type').innerText = data.type === 0 ? "Ø" : data.type;
                 document.getElementById('lbl-effect-name').innerText = effectInfo.name;
                 document.getElementById('lbl-effect-desc').innerText = effectInfo.desc;
                 
-                let elEffect = document.getElementById(`layer-effect`);
-                if (data.type === 0) {
-                    elEffect.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
-                } else {
-                    elEffect.src = `personnage/effets/effet${data.type}.png`;
-                    elEffect.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
-                }
+                let wrapper = document.getElementById('char-wrapper');
+                wrapper.classList.remove('effect-rainbow', 'effect-levitation');
+
+                if (data.type === 1) wrapper.classList.add('effect-rainbow');
+                if (data.type === 2) wrapper.classList.add('effect-levitation');
+
                 return;
             }
 
@@ -430,6 +517,13 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                     if (data.type > max) data.type = 1;
                     if (data.type < 1) data.type = max;
                 }
+                
+                // LOGIQUE EXCLUSIVE : Si un costume spécial est choisi, on enlève la veste
+                if (data.themeIdx > 0 && data.type > 0) {
+                    state.jacket.type = 0;
+                    updateVisual('jacket');
+                }
+                
                 updateVisual(category);
                 return;
             }
@@ -439,6 +533,13 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 let min = ['skin', 'top'].includes(category) ? 1 : 0;
                 if (data.type > data.maxType) data.type = min;
                 if (data.type < min) data.type = data.maxType;
+
+                // LOGIQUE EXCLUSIVE : Si une veste est choisie, on enlève le costume spécial
+                if (category === 'jacket' && data.type > 0) {
+                    state.special.themeIdx = 0;
+                    state.special.type = 0;
+                    updateVisual('special');
+                }
             } 
             else if (prop === 'color' && data.hasColor) {
                 data.colorIdx += direction;
@@ -457,7 +558,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
         }
 
         window.onload = () => {
-            // Le rendu du visage figé avec le "1.png" classique
             document.getElementById('layer-eyes').src = `${basePath}Eyes/1.png`;
             document.getElementById('layer-mouth').src = `${basePath}Mouth/1.png`;
             document.getElementById('layer-nose').src = `${basePath}Nose/1.png`;
