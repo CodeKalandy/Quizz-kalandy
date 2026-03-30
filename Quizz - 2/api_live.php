@@ -43,13 +43,20 @@ switch ($action) {
         $scoresArr = (array)($state['scores'] ?? []);
         if (!isset($scoresArr[$nick])) {
             $players = (array)($state['players'] ?? []);
+            
+            // On sauvegarde désormais la configuration complète de l'avatar
             $players[] = [
                 'nickname' => $nick,
+                'skin' => (int)($input['skin'] ?? 1),
+                'skinColor' => (int)($input['skinColor'] ?? 1),
+                'eyes' => (int)($input['eyes'] ?? 1),
+                'mouth' => (int)($input['mouth'] ?? 1),
+                'top' => (int)($input['top'] ?? 1),
+                'topColor' => (int)($input['topColor'] ?? 1),
+                'jacket' => (int)($input['jacket'] ?? 0),
+                'jacketColor' => (int)($input['jacketColor'] ?? 1),
                 'hair' => (int)($input['hair'] ?? 1),
-                'outfit' => (int)($input['outfit'] ?? 1),
-                'aura' => (int)($input['aura'] ?? 0),
-                'effect' => (int)($input['effect'] ?? 0), // L'effet secret
-                'is_member' => filter_var($input['is_member'] ?? false, FILTER_VALIDATE_BOOLEAN)
+                'hairColor' => (int)($input['hairColor'] ?? 1)
             ];
             $state['players'] = $players;
             
