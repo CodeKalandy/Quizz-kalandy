@@ -18,6 +18,7 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             background-image: 
                 radial-gradient(at 0% 0%, #1e1b4b 0px, transparent 50%),
                 radial-gradient(at 100% 100%, #312e81 0px, transparent 50%);
+            overflow: hidden;
             background-attachment: fixed;
             color: white;
         }
