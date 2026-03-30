@@ -12,40 +12,100 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
     <title>Ton Bernard - Bernard Quizz</title>
     <style>
+        /* === THEME GLOBAL (GAME UI) === */
+        body {
+            background-color: #0f172a; /* Deep Slate */
+            background-image: 
+                radial-gradient(at 0% 0%, #1e1b4b 0px, transparent 50%),
+                radial-gradient(at 100% 100%, #312e81 0px, transparent 50%);
+            background-attachment: fixed;
+            color: white;
+        }
+        
+        .game-card {
+            background-color: #1e1b4b; 
+            border: 4px solid #312e81;
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 0 0 #0b0f19;
+        }
+
         .preview-container { 
-            width: 150px; 
-            height: 150px; 
-            position: relative; 
-            margin: 0 auto 20px; 
-            background: #f3f4f6; 
-            border-radius: 20px; 
+            width: 170px; height: 170px; 
+            position: relative; margin: 0 auto; 
+            background-color: #312e81; 
+            border-radius: 2rem; 
+            border: 6px solid #facc15;
+            box-shadow: 0 8px 0 0 #ca8a04, inset 0 8px 20px rgba(0,0,0,0.5);
             overflow: visible; 
-            border: 4px solid #facc15; 
         }
-        .layer { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            display: block;
+        .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; object-fit: contain; }
+        
+        .category-title {
+            font-family: 'Caveat', cursive;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+            font-size: 2.2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            letter-spacing: 2px;
         }
-        .arrow-btn { background: #e0e7ff; color: #312e81; padding: 0.25rem 0.5rem; border-radius: 0.5rem; font-weight: 900; transition: all 0.2s; }
-        .arrow-btn:hover { background: #c7d2fe; transform: scale(1.1); }
-        .arrow-btn:active { transform: scale(0.9); }
+
+        .control-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background-color: #2e2a72; padding: 0.6rem 0.8rem; border-radius: 1rem;
+            border: 3px solid #3b3687; margin-bottom: 0.6rem;
+        }
+
+        .control-label { font-size: 0.75rem; font-weight: 900; color: #a5b4fc; text-transform: uppercase; }
+        
+        /* Les Boutons d'action type "Jeux Vidéo" */
+        .arrow-btn { 
+            background-color: #3b82f6; color: white; padding: 0.2rem 0.6rem; border-radius: 0.5rem; 
+            font-weight: 900; transition: transform 0.1s, box-shadow 0.1s; 
+            box-shadow: 0 4px 0 0 #1d4ed8; 
+        }
+        .arrow-btn:active { transform: translateY(4px); box-shadow: 0 0px 0 0 #1d4ed8; }
+        
+        .arrow-btn.pink { background-color: #ec4899; box-shadow: 0 4px 0 0 #be185d; }
+        .arrow-btn.pink:active { box-shadow: 0 0px 0 0 #be185d; }
+
+        .val-display { font-size: 0.9rem; font-weight: 900; width: 35px; text-align: center; color: white; }
+
+        /* Bouton Valider Géant */
+        .join-btn {
+            background-color: #10b981; color: white; border: 4px solid #047857;
+            box-shadow: 0 8px 0 0 #064e3b; border-radius: 2rem;
+            font-weight: 900; font-size: 1.6rem; text-transform: uppercase;
+            padding: 1.2rem 2rem; width: 100%; transition: all 0.1s; letter-spacing: 2px;
+            text-shadow: 2px 2px 0px #065f46;
+        }
+        .join-btn:hover { background-color: #34d399; }
+        .join-btn:active { transform: translateY(8px); box-shadow: 0 0px 0 0 #064e3b; }
+
+        /* Animations Fun */
+        .floating { animation: float 3.5s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+
+        .particle {
+            position: absolute; background: rgba(255,255,255,0.03); border-radius: 50%;
+            animation: drift infinite linear; pointer-events: none; z-index: 0;
+        }
+        @keyframes drift { from { transform: translateY(100vh) rotate(0deg); } to { transform: translateY(-100vh) rotate(360deg); } }
     </style>
 </head>
-<body class="bg-indigo-900 min-h-screen text-white flex flex-col items-center p-4 font-sans pb-16 relative overflow-hidden">
+<body class="min-h-screen flex flex-col items-center p-4 font-sans pb-16 relative overflow-x-hidden">
 
-    <div class="fixed top-10 left-10 text-7xl text-white/5 font-black z-0 pointer-events-none">✦</div>
-    <div class="fixed bottom-20 right-20 text-9xl text-white/5 font-black z-0 pointer-events-none">⬢</div>
+    <div class="particle" style="width: 120px; height: 120px; left: 10%; animation-duration: 25s;"></div>
+    <div class="particle" style="width: 200px; height: 200px; left: 80%; animation-duration: 35s;"></div>
+    <div class="particle" style="width: 80px; height: 80px; left: 40%; animation-duration: 20s;"></div>
 
-    <div class="relative z-10 w-full max-w-5xl">
-        <h1 class="text-3xl font-black mb-6 uppercase tracking-widest text-center text-yellow-400 mt-4 drop-shadow-lg" style="font-family: 'Caveat', cursive; font-size: 2.5rem;">Crée ton Bernard</h1>
-
-        <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl shadow-2xl w-full border border-white/20">
+    <div class="relative z-10 w-full max-w-5xl flex flex-col items-center mt-6">
+        
+        <div class="game-card p-8 w-full max-w-md flex flex-col items-center relative mb-8">
+            <div class="absolute -top-5 bg-yellow-400 text-indigo-900 px-6 py-2 rounded-xl font-black text-3xl shadow-[0_4px_0_0_#ca8a04] transform -rotate-2 border-2 border-yellow-500" style="font-family: 'Caveat', cursive;">
+                Crée ton Bernard
+            </div>
             
-            <div class="preview-container shadow-2xl" id="char-wrapper">
+            <div class="preview-container floating mb-6 mt-4" id="char-wrapper">
                 <img id="layer-aura" src="" class="layer" style="z-index: 0;">
                 <img id="layer-hair-back" src="" class="layer" style="z-index: 5;">
                 <img id="layer-skin" src="" class="layer" style="z-index: 10;">
@@ -61,170 +121,165 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 <img id="layer-jacket" src="" class="layer" style="z-index: 31;">
                 
                 <img id="layer-special" src="" class="layer" style="z-index: 38;">
-                
                 <img id="layer-hair-front" src="" class="layer" style="z-index: 40;">
                 <img id="layer-effect" src="" class="layer" style="z-index: 50;">
             </div>
 
             <input type="text" id="nick" maxlength="12" placeholder="TON PSEUDO" value="<?= htmlspecialchars($default_nick) ?>"
-                   class="max-w-md mx-auto block w-full p-4 bg-white/90 border-none rounded-2xl font-black text-center text-indigo-900 focus:ring-4 focus:ring-yellow-400 outline-none transition-all mb-6 shadow-inner">
+                   class="w-full p-4 bg-[#0f172a] border-4 border-[#312e81] rounded-2xl font-black text-center text-white text-xl focus:border-yellow-400 focus:ring-0 outline-none transition-all shadow-[inset_0_4px_10px_rgba(0,0,0,0.5)] placeholder-gray-500 uppercase tracking-wider">
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+            
+            <div class="game-card p-5">
+                <h2 class="category-title text-pink-400">La Base</h2>
                 
-                <div class="space-y-3">
-                    <h2 class="text-2xl font-bold text-yellow-400 mb-4 text-center font-caveat border-b border-yellow-400/30 pb-2">Personnage</h2>
+                <div class="control-row">
+                    <span class="control-label">Peau</span>
+                    <div class="flex gap-1 items-center">
+                        <button onclick="changeLayer('skin', 'color', -1)" class="arrow-btn pink">◀</button>
+                        <span id="lbl-skin-color" class="val-display">1</span>
+                        <button onclick="changeLayer('skin', 'color', 1)" class="arrow-btn pink">▶</button>
+                    </div>
+                </div>
+
+                <div class="bg-[#2e2a72] p-3 rounded-2xl border-2 border-[#3b3687] mt-3">
+                    <span class="control-label block mb-2 text-indigo-300">Cheveux</span>
                     
-                    <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                        <span class="text-xs font-black text-indigo-900 uppercase w-20">Peau</span>
-                        <div class="flex gap-2 items-center">
-                            <button onclick="changeLayer('skin', 'color', -1)" class="arrow-btn">◀</button>
-                            <span id="lbl-skin-color" class="text-sm font-bold w-6 text-center text-indigo-600">1</span>
-                            <button onclick="changeLayer('skin', 'color', 1)" class="arrow-btn">▶</button>
-                        </div>
-                    </div>
-
-                    <div class="bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm space-y-2 mt-2">
-                        <span class="text-xs font-black text-indigo-900 uppercase block">Cheveux</span>
-                        <div class="flex items-center justify-between">
-                            <span class="text-[10px] text-gray-500 uppercase">Longueur</span>
-                            <div class="flex gap-1 items-center">
-                                <button onclick="changeLayer('hair', 'style', -1)" class="arrow-btn !py-1 !px-2">◀</button>
-                                <span id="lbl-hair-style" class="text-[10px] font-bold w-16 text-center text-indigo-600 uppercase">COURT</span>
-                                <button onclick="changeLayer('hair', 'style', 1)" class="arrow-btn !py-1 !px-2">▶</button>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-[10px] text-gray-500 uppercase">Coupe & Coul.</span>
-                            <div class="flex gap-1 items-center">
-                                <button onclick="changeLayer('hair', 'type', -1)" class="arrow-btn !py-1 !px-2">◀</button>
-                                <span id="lbl-hair-type" class="text-xs font-bold w-4 text-center text-indigo-600">1</span>
-                                <button onclick="changeLayer('hair', 'type', 1)" class="arrow-btn !py-1 !px-2">▶</button>
-                            </div>
-                            <div class="flex gap-1 items-center border-l-2 border-indigo-100 pl-1">
-                                <button onclick="changeLayer('hair', 'color', -1)" class="arrow-btn !bg-pink-100 !text-pink-600 !py-1 !px-2">◀</button>
-                                <button onclick="changeLayer('hair', 'color', 1)" class="arrow-btn !bg-pink-100 !text-pink-600 !py-1 !px-2">▶</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <h2 class="text-2xl font-bold text-yellow-400 mb-4 text-center font-caveat border-b border-yellow-400/30 pb-2">Pilosité</h2>
-
-                    <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                        <span class="text-xs font-black text-indigo-900 uppercase w-20">Barbe</span>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] text-indigo-400 font-bold uppercase">Style</span>
                         <div class="flex gap-1 items-center">
-                            <button onclick="changeLayer('beard', 'type', -1)" class="arrow-btn">◀</button>
-                            <span id="lbl-beard-type" class="text-sm font-bold w-4 text-center text-indigo-600">Ø</span>
-                            <button onclick="changeLayer('beard', 'type', 1)" class="arrow-btn">▶</button>
-                        </div>
-                        <div class="flex gap-1 items-center border-l-2 border-indigo-100 pl-1">
-                            <button onclick="changeLayer('beard', 'color', -1)" class="arrow-btn !bg-pink-100 !text-pink-600">◀</button>
-                            <button onclick="changeLayer('beard', 'color', 1)" class="arrow-btn !bg-pink-100 !text-pink-600">▶</button>
+                            <button onclick="changeLayer('hair', 'style', -1)" class="arrow-btn !py-1">◀</button>
+                            <span id="lbl-hair-style" class="val-display !w-20 text-[10px]">COURT</span>
+                            <button onclick="changeLayer('hair', 'style', 1)" class="arrow-btn !py-1">▶</button>
                         </div>
                     </div>
-
-                    <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                        <span class="text-xs font-black text-indigo-900 uppercase w-20">Moustache</span>
-                        <div class="flex gap-1 items-center">
-                            <button onclick="changeLayer('mustache', 'type', -1)" class="arrow-btn">◀</button>
-                            <span id="lbl-mustache-type" class="text-sm font-bold w-4 text-center text-indigo-600">Ø</span>
-                            <button onclick="changeLayer('mustache', 'type', 1)" class="arrow-btn">▶</button>
-                        </div>
-                        <div class="flex gap-1 items-center border-l-2 border-indigo-100 pl-1">
-                            <button onclick="changeLayer('mustache', 'color', -1)" class="arrow-btn !bg-pink-100 !text-pink-600">◀</button>
-                            <button onclick="changeLayer('mustache', 'color', 1)" class="arrow-btn !bg-pink-100 !text-pink-600">▶</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <h2 class="text-2xl font-bold text-yellow-400 mb-4 text-center font-caveat border-b border-yellow-400/30 pb-2">Tenues</h2>
                     
-                    <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                        <span class="text-xs font-black text-indigo-900 uppercase w-20">T-Shirt</span>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] text-indigo-400 font-bold uppercase">Coupe</span>
                         <div class="flex gap-1 items-center">
-                            <button onclick="changeLayer('top', 'type', -1)" class="arrow-btn">◀</button>
-                            <span id="lbl-top-type" class="text-sm font-bold w-4 text-center text-indigo-600">1</span>
-                            <button onclick="changeLayer('top', 'type', 1)" class="arrow-btn">▶</button>
+                            <button onclick="changeLayer('hair', 'type', -1)" class="arrow-btn !py-1">◀</button>
+                            <span id="lbl-hair-type" class="val-display text-xs !w-6">1</span>
+                            <button onclick="changeLayer('hair', 'type', 1)" class="arrow-btn !py-1">▶</button>
                         </div>
-                        <div class="flex gap-1 items-center border-l-2 border-indigo-100 pl-1">
-                            <button onclick="changeLayer('top', 'color', -1)" class="arrow-btn !bg-pink-100 !text-pink-600">◀</button>
-                            <button onclick="changeLayer('top', 'color', 1)" class="arrow-btn !bg-pink-100 !text-pink-600">▶</button>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between bg-white/90 p-2 rounded-xl border border-indigo-100 shadow-sm">
-                        <span class="text-xs font-black text-indigo-900 uppercase w-20">Veste</span>
-                        <div class="flex gap-1 items-center">
-                            <button onclick="changeLayer('jacket', 'type', -1)" class="arrow-btn">◀</button>
-                            <span id="lbl-jacket-type" class="text-sm font-bold w-4 text-center text-indigo-600">Ø</span>
-                            <button onclick="changeLayer('jacket', 'type', 1)" class="arrow-btn">▶</button>
-                        </div>
-                        <div class="flex gap-1 items-center border-l-2 border-indigo-100 pl-1">
-                            <button onclick="changeLayer('jacket', 'color', -1)" class="arrow-btn !bg-pink-100 !text-pink-600">◀</button>
-                            <button onclick="changeLayer('jacket', 'color', 1)" class="arrow-btn !bg-pink-100 !text-pink-600">▶</button>
-                        </div>
-                    </div>
-
-                    <div class="bg-indigo-100/90 p-2 rounded-xl border border-indigo-200 shadow-sm space-y-2 mt-2">
-                        <span class="text-xs font-black text-indigo-900 uppercase block text-center border-b border-indigo-200 pb-1">Costume Spécial</span>
-                        
-                        <div class="flex items-center justify-between">
-                            <span class="text-[10px] text-gray-600 uppercase font-bold">Thème</span>
-                            <div class="flex gap-1 items-center">
-                                <button onclick="changeLayer('special', 'theme', -1)" class="arrow-btn !py-1 !px-2">◀</button>
-                                <span id="lbl-special-theme" class="text-[10px] font-black w-16 text-center text-indigo-700 uppercase">AUCUN</span>
-                                <button onclick="changeLayer('special', 'theme', 1)" class="arrow-btn !py-1 !px-2">▶</button>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <span class="text-[10px] text-gray-600 uppercase font-bold">Variante</span>
-                            <div class="flex gap-1 items-center">
-                                <button onclick="changeLayer('special', 'type', -1)" class="arrow-btn !py-1 !px-2">◀</button>
-                                <span id="lbl-special-type" class="text-xs font-black w-16 text-center text-indigo-700">Ø</span>
-                                <button onclick="changeLayer('special', 'type', 1)" class="arrow-btn !py-1 !px-2">▶</button>
-                            </div>
+                        <div class="flex gap-1 items-center border-l-2 border-[#3b3687] pl-1">
+                            <button onclick="changeLayer('hair', 'color', -1)" class="arrow-btn pink !py-1">◀</button>
+                            <button onclick="changeLayer('hair', 'color', 1)" class="arrow-btn pink !py-1">▶</button>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-span-1 md:col-span-3 mt-2 border-t border-white/20 pt-4">
-                    <h2 class="text-2xl font-bold text-yellow-400 mb-4 text-center font-caveat">Auras & Effets</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-                        
-                        <div class="flex items-center justify-between bg-yellow-100 p-3 rounded-xl border border-yellow-300 shadow-sm h-[68px]">
-                            <span class="text-sm font-black text-yellow-800 uppercase w-20">Aura</span>
-                            <div class="flex gap-2 items-center">
-                                <button onclick="changeLayer('aura', 'type', -1)" class="arrow-btn !bg-yellow-200 hover:!bg-yellow-300">◀</button>
-                                <span id="lbl-aura-type" class="text-sm font-bold w-6 text-center text-yellow-800">Ø</span>
-                                <button onclick="changeLayer('aura', 'type', 1)" class="arrow-btn !bg-yellow-200 hover:!bg-yellow-300">▶</button>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-col bg-purple-100 p-2 rounded-xl border border-purple-300 shadow-sm justify-center h-[68px]">
-                            <div class="flex items-center justify-between w-full mb-1">
-                                <span class="text-sm font-black text-purple-800 uppercase w-16">Effet</span>
-                                <span id="lbl-effect-name" class="text-[11px] font-black text-purple-600 uppercase truncate px-2">AUCUN</span>
-                                <div class="flex gap-1 items-center">
-                                    <button onclick="changeLayer('effect', 'type', -1)" class="arrow-btn !bg-purple-200 hover:!bg-purple-300 !py-1 !px-2">◀</button>
-                                    <span id="lbl-effect-type" class="text-xs font-bold w-4 text-center text-purple-800">Ø</span>
-                                    <button onclick="changeLayer('effect', 'type', 1)" class="arrow-btn !bg-purple-200 hover:!bg-purple-300 !py-1 !px-2">▶</button>
-                                </div>
-                            </div>
-                            <span id="lbl-effect-desc" class="text-[10px] text-center text-purple-500 font-semibold italic truncate w-full"></span>
-                        </div>
-
-                    </div>
-                </div>
-
             </div>
 
-            <button onclick="join()" class="w-full mt-8 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 py-4 rounded-2xl font-black text-lg shadow-[0_4px_0_0_#ca8a04] active:shadow-none active:translate-y-1 transition-all uppercase tracking-widest">
-                Rejoindre la salle !
-            </button>
+            <div class="game-card p-5">
+                <h2 class="category-title text-amber-400">Le Style</h2>
+                
+                <div class="control-row">
+                    <span class="control-label text-[10px]">Barbe</span>
+                    <div class="flex gap-1 items-center">
+                        <button onclick="changeLayer('beard', 'type', -1)" class="arrow-btn !py-1">◀</button>
+                        <span id="lbl-beard-type" class="val-display !w-4 text-xs">Ø</span>
+                        <button onclick="changeLayer('beard', 'type', 1)" class="arrow-btn !py-1">▶</button>
+                    </div>
+                    <div class="flex gap-1 items-center border-l-2 border-[#3b3687] pl-1">
+                        <button onclick="changeLayer('beard', 'color', -1)" class="arrow-btn pink !py-1">◀</button>
+                        <button onclick="changeLayer('beard', 'color', 1)" class="arrow-btn pink !py-1">▶</button>
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <span class="control-label text-[10px]">Moust.</span>
+                    <div class="flex gap-1 items-center">
+                        <button onclick="changeLayer('mustache', 'type', -1)" class="arrow-btn !py-1">◀</button>
+                        <span id="lbl-mustache-type" class="val-display !w-4 text-xs">Ø</span>
+                        <button onclick="changeLayer('mustache', 'type', 1)" class="arrow-btn !py-1">▶</button>
+                    </div>
+                    <div class="flex gap-1 items-center border-l-2 border-[#3b3687] pl-1">
+                        <button onclick="changeLayer('mustache', 'color', -1)" class="arrow-btn pink !py-1">◀</button>
+                        <button onclick="changeLayer('mustache', 'color', 1)" class="arrow-btn pink !py-1">▶</button>
+                    </div>
+                </div>
+
+                <div class="control-row mt-3 !bg-yellow-900/30 !border-yellow-700/50">
+                    <span class="control-label text-yellow-500">Aura</span>
+                    <div class="flex gap-1 items-center">
+                        <button onclick="changeLayer('aura', 'type', -1)" class="arrow-btn !bg-yellow-600 !shadow-[0_4px_0_0_#a16207]">◀</button>
+                        <span id="lbl-aura-type" class="val-display text-yellow-200">Ø</span>
+                        <button onclick="changeLayer('aura', 'type', 1)" class="arrow-btn !bg-yellow-600 !shadow-[0_4px_0_0_#a16207]">▶</button>
+                    </div>
+                </div>
+
+                <div class="bg-purple-900/30 p-2 rounded-xl border-2 border-purple-700/50">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="control-label text-purple-400">Effet</span>
+                        <span id="lbl-effect-name" class="text-[10px] font-black text-purple-300 uppercase truncate px-1">AUCUN</span>
+                        <div class="flex gap-1 items-center">
+                            <button onclick="changeLayer('effect', 'type', -1)" class="arrow-btn !bg-purple-600 !shadow-[0_4px_0_0_#7e22ce] !py-0.5">◀</button>
+                            <span id="lbl-effect-type" class="val-display text-purple-100 !w-4 text-xs">Ø</span>
+                            <button onclick="changeLayer('effect', 'type', 1)" class="arrow-btn !bg-purple-600 !shadow-[0_4px_0_0_#7e22ce] !py-0.5">▶</button>
+                        </div>
+                    </div>
+                    <div id="lbl-effect-desc" class="text-[9px] text-center text-purple-400 font-semibold italic truncate w-full"></div>
+                </div>
+            </div>
+
+            <div class="game-card p-5">
+                <h2 class="category-title text-teal-400">Tenues</h2>
+                
+                <div class="control-row">
+                    <span class="control-label">T-Shirt</span>
+                    <div class="flex gap-1 items-center">
+                        <button onclick="changeLayer('top', 'type', -1)" class="arrow-btn">◀</button>
+                        <span id="lbl-top-type" class="val-display">1</span>
+                        <button onclick="changeLayer('top', 'type', 1)" class="arrow-btn">▶</button>
+                    </div>
+                    <div class="flex gap-1 items-center border-l-2 border-[#3b3687] pl-1">
+                        <button onclick="changeLayer('top', 'color', -1)" class="arrow-btn pink">◀</button>
+                        <button onclick="changeLayer('top', 'color', 1)" class="arrow-btn pink">▶</button>
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <span class="control-label">Veste</span>
+                    <div class="flex gap-1 items-center">
+                        <button onclick="changeLayer('jacket', 'type', -1)" class="arrow-btn">◀</button>
+                        <span id="lbl-jacket-type" class="val-display">Ø</span>
+                        <button onclick="changeLayer('jacket', 'type', 1)" class="arrow-btn">▶</button>
+                    </div>
+                    <div class="flex gap-1 items-center border-l-2 border-[#3b3687] pl-1">
+                        <button onclick="changeLayer('jacket', 'color', -1)" class="arrow-btn pink">◀</button>
+                        <button onclick="changeLayer('jacket', 'color', 1)" class="arrow-btn pink">▶</button>
+                    </div>
+                </div>
+
+                <div class="bg-teal-900/30 p-3 rounded-2xl border-2 border-teal-700/50 mt-3">
+                    <span class="control-label block mb-2 text-teal-400">Costume Spécial</span>
+                    
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] text-teal-200 font-bold uppercase">Thème</span>
+                        <div class="flex gap-1 items-center">
+                            <button onclick="changeLayer('special', 'theme', -1)" class="arrow-btn !bg-teal-600 !shadow-[0_4px_0_0_#0f766e] !py-1">◀</button>
+                            <span id="lbl-special-theme" class="val-display !w-20 text-[10px] text-teal-100">AUCUN</span>
+                            <button onclick="changeLayer('special', 'theme', 1)" class="arrow-btn !bg-teal-600 !shadow-[0_4px_0_0_#0f766e] !py-1">▶</button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] text-teal-200 font-bold uppercase">Variante</span>
+                        <div class="flex gap-1 items-center">
+                            <button onclick="changeLayer('special', 'type', -1)" class="arrow-btn !bg-teal-600 !shadow-[0_4px_0_0_#0f766e] !py-1">◀</button>
+                            <span id="lbl-special-type" class="val-display text-xs text-teal-100">Ø</span>
+                            <button onclick="changeLayer('special', 'type', 1)" class="arrow-btn !bg-teal-600 !shadow-[0_4px_0_0_#0f766e] !py-1">▶</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
+
+        <div class="w-full max-w-md mt-10">
+            <button onclick="join()" class="join-btn">Rejoindre la partie !</button>
+        </div>
+
     </div>
 
     <script>
@@ -237,7 +292,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
         const hairStyles = ['very_short', 'short', 'medium', 'long', 'shaved'];
         const maxHairByType = { 'very_short': 15, 'short': 17, 'medium': 18, 'long': 21, 'shaved': 6 };
 
-        // Configuration de la nouvelle catégorie "Spécial"
         const specialThemes = [
             { key: "none", name: "Aucun", path: "", max: 0 },
             { key: "neutral", name: "Neutre", path: "Jacket/Men/Neutral/Men", max: 4 },
@@ -249,14 +303,13 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             { key: "christmas", name: "Noël", path: "Jacket/Men/Christmas/Men", max: 12 }
         ];
 
-        // Configuration des textes pour la catégorie "Effet"
         const effectDetails = [
             { name: "Aucun", desc: "" },
             { name: "Arc-en-Ciel", desc: "Participer à 10 parties. (1/10)" },
             { name: "Lévitation", desc: "Remporter 3 médailles d'or 🥇. (0/3)" },
-            { name: "Effet 3", desc: "À débloquer..." },
-            { name: "Effet 4", desc: "À débloquer..." },
-            { name: "Effet 5", desc: "À débloquer..." }
+            { name: "Effet Mystère", desc: "À débloquer..." },
+            { name: "Effet Mystère", desc: "À débloquer..." },
+            { name: "Effet Mystère", desc: "À débloquer..." }
         ];
 
         let state = {
@@ -277,7 +330,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             const lblColor = document.getElementById(`lbl-${category}-color`);
             const lblStyle = document.getElementById(`lbl-${category}-style`);
             
-            // Gestion de l'affichage de la catégorie unique Spécial
             if (category === 'special') {
                 let theme = specialThemes[data.themeIdx];
                 document.getElementById('lbl-special-theme').innerText = theme.name;
@@ -294,7 +346,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 return;
             }
 
-            // Gestion de l'affichage des textes pour la catégorie Effet
             if (category === 'effect') {
                 let effectInfo = effectDetails[data.type] || effectDetails[0];
                 document.getElementById('lbl-effect-type').innerText = data.type === 0 ? "Ø" : data.type;
@@ -324,7 +375,7 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
 
             if(lblType) lblType.innerText = data.type;
             if(lblColor) lblColor.innerText = data.colorIdx + 1;
-            if(lblStyle) lblStyle.innerText = hairStyles[data.styleIdx].replace('_', ' ');
+            if(lblStyle) lblStyle.innerText = hairStyles[data.styleIdx].replace('_', ' ').toUpperCase();
 
             if (category === 'hair') {
                 let colorCode = data.colors[data.colorIdx];
@@ -406,13 +457,12 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
         }
 
         window.onload = () => {
-            // Rendu strict des éléments du visage basiques (non modifiables dans l'UI)
+            // Le rendu du visage figé avec le "1.png" classique
             document.getElementById('layer-eyes').src = `${basePath}Eyes/1.png`;
             document.getElementById('layer-mouth').src = `${basePath}Mouth/1.png`;
             document.getElementById('layer-nose').src = `${basePath}Nose/1.png`;
             document.getElementById('layer-eyebrow').src = `${basePath}Eyebrow/1/1.png`;
 
-            // Initialisation des autres éléments
             Object.keys(state).forEach(cat => updateVisual(cat));
         };
 
@@ -423,7 +473,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             const payload = {
                 nickname: nick,
                 skin: state.skin.type, skinColor: state.skin.colorIdx,
-                // On fixe automatiquement les paramètres du visage pour le backend
                 eyes: 1, mouth: 1, nose: 1, eyebrow: 1, eyebrowColor: 0, spot: 0,
                 
                 hair: state.hair.type, hairColor: state.hair.colorIdx, hairStyle: state.hair.styleIdx,
@@ -432,12 +481,10 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 top: state.top.type, topColor: state.top.colorIdx,
                 jacket: state.jacket.type, jacketColor: state.jacket.colorIdx,
                 
-                // On remet tous les spéciaux à 0 par défaut
                 antiquity: 0, christmas: 0, halloween: 0, job: 0, medieval: 0, neutral: 0, pirate: 0,
                 aura: state.aura.type, effect: state.effect.type
             };
 
-            // On écrase la valeur uniquement pour le costume spécial sélectionné
             if (state.special.themeIdx > 0 && state.special.type > 0) {
                 let themeKey = specialThemes[state.special.themeIdx].key;
                 payload[themeKey] = state.special.type;
