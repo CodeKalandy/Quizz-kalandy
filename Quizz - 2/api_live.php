@@ -44,19 +44,43 @@ switch ($action) {
         if (!isset($scoresArr[$nick])) {
             $players = (array)($state['players'] ?? []);
             
-            // On sauvegarde désormais la configuration complète de l'avatar
+            // Configuration complète de l'avatar (nouveau système en couches)
             $players[] = [
-                'nickname' => $nick,
-                'skin' => (int)($input['skin'] ?? 1),
-                'skinColor' => (int)($input['skinColor'] ?? 1),
-                'eyes' => (int)($input['eyes'] ?? 1),
-                'mouth' => (int)($input['mouth'] ?? 1),
-                'top' => (int)($input['top'] ?? 1),
-                'topColor' => (int)($input['topColor'] ?? 1),
-                'jacket' => (int)($input['jacket'] ?? 0),
-                'jacketColor' => (int)($input['jacketColor'] ?? 1),
-                'hair' => (int)($input['hair'] ?? 1),
-                'hairColor' => (int)($input['hairColor'] ?? 1)
+                'nickname'      => $nick,
+                // Peau
+                'skin'          => (int)($input['skin'] ?? 1),
+                'skinColor'     => (int)($input['skinColor'] ?? 0),
+                // Visage (fixes)
+                'eyes'          => (int)($input['eyes'] ?? 1),
+                'mouth'         => (int)($input['mouth'] ?? 1),
+                'nose'          => (int)($input['nose'] ?? 1),
+                'eyebrow'       => (int)($input['eyebrow'] ?? 1),
+                'eyebrowColor'  => (int)($input['eyebrowColor'] ?? 0),
+                // Cheveux
+                'hair'          => (int)($input['hair'] ?? 1),
+                'hairColor'     => (int)($input['hairColor'] ?? 0),
+                'hairStyle'     => (int)($input['hairStyle'] ?? 1),
+                // Barbe & Moustache
+                'beard'         => (int)($input['beard'] ?? 0),
+                'beardColor'    => (int)($input['beardColor'] ?? 0),
+                'mustache'      => (int)($input['mustache'] ?? 0),
+                'mustacheColor' => (int)($input['mustacheColor'] ?? 0),
+                // Vêtements de base
+                'top'           => (int)($input['top'] ?? 1),
+                'topColor'      => (int)($input['topColor'] ?? 0),
+                'jacket'        => (int)($input['jacket'] ?? 0),
+                'jacketColor'   => (int)($input['jacketColor'] ?? 0),
+                // Costume spécial
+                'antiquity'     => (int)($input['antiquity'] ?? 0),
+                'christmas'     => (int)($input['christmas'] ?? 0),
+                'halloween'     => (int)($input['halloween'] ?? 0),
+                'job'           => (int)($input['job'] ?? 0),
+                'medieval'      => (int)($input['medieval'] ?? 0),
+                'neutral'       => (int)($input['neutral'] ?? 0),
+                'pirate'        => (int)($input['pirate'] ?? 0),
+                // Effets
+                'aura'          => (int)($input['aura'] ?? 0),
+                'effect'        => (int)($input['effect'] ?? 0),
             ];
             $state['players'] = $players;
             

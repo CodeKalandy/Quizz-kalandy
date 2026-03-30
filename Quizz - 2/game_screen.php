@@ -1,12 +1,3 @@
-<?php
-session_start();
-if (!isset($_SESSION['current_pin']) || !isset($_SESSION['current_nick'])) {
-    header("Location: dashboard"); // Redirige vers l'accueil si le joueur n'est pas passé par le lobby
-    exit;
-}
-$pin = $_SESSION['current_pin'];
-$nick = $_SESSION['current_nick'];
-?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -103,9 +94,9 @@ $nick = $_SESSION['current_nick'];
     </div>
 
     <script>
-        // Utilisation des variables PHP sécurisées au lieu de lire l'URL
-        const pin = "<?= htmlspecialchars($pin) ?>";
-        const nick = "<?= htmlspecialchars($nick) ?>";
+        const urlParams = new URLSearchParams(window.location.search);
+        const pin = urlParams.get('pin');
+        const nick = urlParams.get('nick') || localStorage.getItem('quiz_nickname') || 'Joueur';
         
         let answered = false;
         let lastQIndex = -1; 
@@ -161,21 +152,18 @@ $nick = $_SESSION['current_nick'];
             const jacketC  = clothesColors[p.jacketColor ?? 0] ?? 1;
             const eyebrowC = commonColors[p.eyebrowColor ?? 0] ?? 1;
 
-            // Aura
             let auraHtml = '';
             if (p.aura > 0 && p.aura <= 5) {
                 const zA = (p.aura==1||p.aura==5) ? 60 : 0;
                 auraHtml = `<img src="personnage/aura/aura${p.aura}.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;z-index:${zA};animation:pulseAura 2.5s ease-in-out infinite alternate;" onerror="this.src='${BLANK}'">`;
             }
 
-            // Costume spécial vs veste
             let jacketSrc  = (p.jacket??0)>0 ? `${basePath}Jacket/Men/${p.jacket}/${jacketC}.png` : BLANK;
             let specialSrc = BLANK;
             for (const t of specialThemes) {
                 if ((p[t.key]??0) > 0) { specialSrc = `${basePath}${t.path}/${p[t.key]}.png`; jacketSrc = BLANK; break; }
             }
 
-            // Effets CSS
             let wrapExtra = '';
             if (p.effect==1) wrapExtra = 'animation:rainbowBorder 3s linear infinite;';
             if (p.effect==2) wrapExtra = 'animation:levitate 3s ease-in-out infinite;';
@@ -259,16 +247,12 @@ $nick = $_SESSION['current_nick'];
                         const avatarEl = document.getElementById('my-avatar');
                         if(!avatarEl.dataset.loaded) {
                             avatarEl.dataset.loaded = '1';
-                            // On vide le conteneur et on y place les couches directement
                             avatarEl.style.position = 'relative';
                             avatarEl.style.overflow = 'visible';
-                            avatarEl.innerHTML = (() => {
-                                // Générer les couches sans le div wrapper externe
-                                const tmp = document.createElement('div');
-                                tmp.innerHTML = getAvatarHtml(me, 'w-12 h-12', '');
-                                const inner = tmp.firstElementChild;
-                                return inner ? inner.innerHTML : '';
-                            })();
+                            const tmp = document.createElement('div');
+                            tmp.innerHTML = getAvatarHtml(me, 'w-12 h-12', '');
+                            const inner = tmp.firstElementChild;
+                            if (inner) avatarEl.innerHTML = inner.innerHTML;
                         }
 
                         let neonClass = me.is_member ? 'neon-vip' : '';
