@@ -84,7 +84,7 @@
             ✨ Psst... Crée un compte pour devenir VIP !<br>
             Tu auras accès à :<br>
             - La sauvegarde de ton Bernard favori 👕<br>
-            - Les Auras Lévitation & Arc-en-ciel 🌈<br>
+            - Les Auras <br>
             - Un Joker 50/50 exclusif 🃏<br>
             - Toutes tes stats & titres sauvegardés 📈 !
         </div>

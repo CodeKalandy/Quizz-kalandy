@@ -36,6 +36,10 @@ switch ($action) {
         $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $nick = htmlspecialchars($input['nickname'] ?? 'Anonyme');
         
+        if (session_status() === PHP_SESSION_NONE) { session_start(); }
+        $_SESSION['current_pin'] = $pin;
+        $_SESSION['current_nick'] = $nick;
+        
         $scoresArr = (array)($state['scores'] ?? []);
         if (!isset($scoresArr[$nick])) {
             $players = (array)($state['players'] ?? []);
