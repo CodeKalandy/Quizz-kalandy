@@ -1,23 +1,13 @@
 <?php
 require_once 'db.php';
-
-// Sécurité : Seuls les utilisateurs connectés accèdent au dashboard
-if (!isset($_SESSION['user_id'])) { 
-    header("Location: index.php"); 
-    exit; 
+if (!isset($_SESSION['user_id'])) {
+    header("Location: index");
+    exit;
 }
 
-$userId = $_SESSION['user_id'];
-$userRole = $_SESSION['role'];
-$isAdmin = ($userRole === 'admin' || $userRole === 'fondateur');
+$role = $_SESSION['role'] ?? 'joueur';
 
-// Récupération des quiz accessibles (Publics + les miens + tous si Admin)
-$query = "SELECT q.*, u.username as owner_name FROM quizzes q 
-          JOIN users u ON q.user_id = u.id
-          WHERE q.is_private = 0 OR q.user_id = ? OR ? IN ('admin', 'fondateur')
-          ORDER BY q.id DESC";
-$stmt = $pdo->prepare($query);
-$stmt->execute([$userId, $userRole]);
+$stmt = $pdo->query("SELECT * FROM quizzes ORDER BY created_at DESC");
 $quizzes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -26,92 +16,55 @@ $quizzes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>Dashboard - Bernard Quizz</title>
+    <title>Tableau de Bord - Bernard Quizz</title>
 </head>
-<body class="bg-gray-100 font-sans">
-    <nav class="bg-indigo-700 text-white p-4 shadow-lg">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-black italic tracking-tighter">BERNARD QUIZZ</h1>
-            <div class="flex gap-4 items-center">
-                <a href="profil.php" class="bg-indigo-600 px-4 py-2 rounded-lg font-bold hover:bg-indigo-500 transition">Mon Profil</a>
-                <a href="logout.php" class="text-sm opacity-70 hover:opacity-100">Déconnexion</a>
+<body class="bg-indigo-100 font-sans text-gray-800 min-h-screen p-4 md:p-8">
+    <div class="max-w-5xl mx-auto">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-3xl shadow-xl mb-8">
+            <div class="flex items-center gap-4 mb-4 md:mb-0">
+                <img src="images/logo.png" alt="Logo" class="h-12" onerror="this.style.display='none'">
+                <div>
+                    <h1 class="text-2xl font-black text-indigo-900 uppercase tracking-widest">Bonjour, <?= htmlspecialchars($_SESSION['username']) ?> !</h1>
+                    <p class="text-sm font-bold text-gray-400 uppercase">Rôle : <?= $role ?></p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <a href="profil" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold px-5 py-2 rounded-xl transition">👤 Ma Vitrine</a>
+                <a href="logout" class="bg-red-100 hover:bg-red-200 text-red-600 font-bold px-5 py-2 rounded-xl transition">Déconnexion</a>
             </div>
         </div>
-    </nav>
 
-    <div class="max-w-6xl mx-auto py-8 px-6">
-        <h2 class="text-3xl font-bold mb-8 text-gray-800 tracking-tighter">Bonjour, <?= htmlspecialchars($_SESSION['username']) ?> !</h2>
+        <?php if ($role === 'createur' || $role === 'admin'): ?>
+            <div class="bg-white p-6 rounded-3xl shadow-xl mb-8 border-l-4 border-yellow-400">
+                <h2 class="text-xl font-black text-indigo-900 uppercase tracking-widest mb-4">🛠️ Espace Créateur</h2>
+                <div class="flex gap-4">
+                    <a href="manage_quizzes" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-black px-6 py-3 rounded-2xl shadow-md transition">Gérer mes Quiz</a>
+                    <?php if ($role === 'admin'): ?>
+                        <a href="admin_users" class="bg-purple-600 hover:bg-purple-500 text-white font-black px-6 py-3 rounded-2xl shadow-md transition">Gérer les Utilisateurs</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endif; ?>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <h2 class="text-3xl font-black text-indigo-900 uppercase tracking-widest mb-6">🎮 Lancer une partie</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <?php foreach ($quizzes as $q): ?>
+                <div class="bg-white rounded-3xl shadow-lg p-6 flex flex-col h-full transform transition hover:-translate-y-1 hover:shadow-2xl">
+                    <h3 class="text-xl font-black text-indigo-800 mb-2"><?= htmlspecialchars($q['title']) ?></h3>
+                    <p class="text-gray-500 text-sm mb-6 flex-grow"><?= htmlspecialchars($q['description']) ?></p>
+                    <a href="host_game?quiz_id=<?= $q['id'] ?>" class="text-center bg-indigo-600 text-white font-black py-3 rounded-xl hover:bg-indigo-500 transition shadow-md w-full">
+                        Héberger ce Quiz
+                    </a>
+                </div>
+            <?php endforeach; ?>
             
-            <div class="space-y-6">
-                <div class="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-yellow-400">
-                    <h3 class="font-black text-xl mb-4 uppercase tracking-tight">Rejoindre une partie</h3>
-                    <form action="lobby.php" method="GET" class="flex flex-col gap-3">
-                        <input type="text" name="pin" placeholder="CODE PIN" class="w-full p-4 border-2 rounded-2xl font-black text-2xl tracking-widest outline-none focus:border-indigo-500 text-center">
-                        <button type="submit" class="bg-indigo-600 text-white py-4 rounded-2xl font-black hover:bg-indigo-700 transition shadow-lg">REJOINDRE</button>
-                    </form>
-                </div>
-
-                <div class="grid grid-cols-1 gap-4">
-                    <?php if(hasRole('createur')): ?>
-                    <a href="manage_quizzes.php" class="bg-white p-6 rounded-3xl shadow-sm border-b-4 border-indigo-500 hover:scale-105 transition flex items-center gap-4">
-                        <span class="text-3xl">📚</span>
-                        <div>
-                            <h3 class="font-black text-sm uppercase">Ma Bibliothèque</h3>
-                            <p class="text-gray-400 text-[10px]">Gérez vos créations</p>
-                        </div>
-                    </a>
-                    <?php endif; ?>
-
-                    <?php if(hasRole('admin')): ?>
-                    <a href="admin_users.php" class="bg-white p-6 rounded-3xl shadow-sm border-b-4 border-red-500 hover:scale-105 transition flex items-center gap-4">
-                        <span class="text-3xl">🛠️</span>
-                        <div>
-                            <h3 class="font-black text-sm uppercase">Panel Admin</h3>
-                            <p class="text-gray-400 text-[10px]">Gestion utilisateurs</p>
-                        </div>
-                    </a>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <div class="lg:col-span-2">
-                <div class="flex justify-between items-end mb-6">
-                    <h3 class="font-black text-2xl text-indigo-900 uppercase italic tracking-tighter">Quiz de la communauté</h3>
-                    <span class="text-xs font-bold text-gray-400"><?= count($quizzes) ?> quiz disponibles</span>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <?php if(empty($quizzes)): ?>
-                        <div class="col-span-2 bg-white p-10 rounded-3xl border-2 border-dashed border-gray-200 text-center">
-                            <p class="text-gray-400 font-bold italic">Aucun quiz public pour le moment...</p>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php foreach($quizzes as $q): ?>
-                    <div class="bg-white rounded-3xl shadow-md border border-gray-100 overflow-hidden flex flex-col group">
-                        <div class="h-32 bg-gray-200 relative">
-                            <?php if($q['image_url']): ?> 
-                                <img src="<?= htmlspecialchars($q['image_url']) ?>" class="w-full h-full object-cover group-hover:scale-110 transition duration-500"> 
-                            <?php else: ?>
-                                <div class="w-full h-full flex items-center justify-center text-gray-300 font-black">IMAGE</div>
-                            <?php endif; ?>
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                            <span class="absolute bottom-2 left-3 text-white text-[10px] font-bold">Par <?= htmlspecialchars($q['owner_name']) ?></span>
-                        </div>
-                        <div class="p-4 flex-grow">
-                            <h4 class="font-black text-gray-800 mb-2 truncate"><?= htmlspecialchars($q['title']) ?></h4>
-                            <a href="host_game.php?quiz_id=<?= $q['id'] ?>" class="block w-full bg-green-500 text-white text-center py-2 rounded-xl text-xs font-black hover:bg-green-600 transition shadow-sm">
-                                🚀 LANCER UNE PARTIE
-                            </a>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-
+            <?php if (empty($quizzes)): ?>
+                <p class="text-gray-500 italic col-span-full">Aucun quiz disponible pour le moment.</p>
+            <?php endif; ?>
         </div>
+
     </div>
 </body>
 </html>
