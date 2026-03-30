@@ -86,6 +86,13 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
 
         /* === ANIMATIONS & EFFETS === */
         
+        /* Animation Fading pour l'Aura */
+        .aura-fade { animation: pulse-aura 2.5s ease-in-out infinite alternate; }
+        @keyframes pulse-aura {
+            0% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
         /* Effet 2: Lévitation Magique */
         .effect-levitation { animation: levitate-strong 2s ease-in-out infinite !important; }
         @keyframes levitate-strong {
@@ -125,6 +132,9 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             </div>
             
             <div class="preview-container mb-6 mt-4" id="char-wrapper">
+                
+                <img id="layer-aura" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer aura-fade" style="z-index: 0;">
+
                 <img id="layer-hair-back" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 5;">
                 
                 <img id="layer-skin" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 10;">
@@ -142,8 +152,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 <img id="layer-eyebrow" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 52;">
                 <img id="layer-nose" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 53;">
                 <img id="layer-hair-front" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 54;">
-                
-                <img id="layer-aura" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 60;">
                 
                 <img id="layer-effect" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 70;">
             </div>
@@ -441,23 +449,42 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 document.getElementById('lbl-effect-desc').innerText = effectInfo.desc;
                 
                 let wrapper = document.getElementById('char-wrapper');
-                
-                // On nettoie les anciens effets CSS
                 wrapper.classList.remove('effect-rainbow', 'effect-levitation');
 
-                // On applique le nouvel effet CSS
                 if (data.type === 1) wrapper.classList.add('effect-rainbow');
                 if (data.type === 2) wrapper.classList.add('effect-levitation');
 
-                // On gère la balise image pour éviter les erreurs 404
                 let elEffect = document.getElementById('layer-effect');
                 if (data.type > 2) {
                     elEffect.src = `personnage/effets/effet${data.type}.png`;
                     elEffect.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
                 } else {
-                    // Pour 0 (Aucun), 1 (Rainbow), 2 (Levitation), il n'y a pas d'image
                     elEffect.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
                 }
+                return;
+            }
+
+            // GESTION DE L'AURA AVEC Z-INDEX DYNAMIQUE
+            if (category === 'aura') {
+                let elAura = document.getElementById(`layer-aura`);
+                
+                if (data.type === 0) {
+                    elAura.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+                    if(lblType) lblType.innerText = "Ø";
+                    return;
+                }
+                
+                if(lblType) lblType.innerText = data.type;
+                elAura.src = `personnage/aura/aura${data.type}.png`;
+                
+                // Si l'aura est 1 ou 5 -> Tout devant. Sinon (2, 3, 4) -> Tout derrière
+                if (data.type === 1 || data.type === 5) {
+                    elAura.style.zIndex = "60";
+                } else {
+                    elAura.style.zIndex = "0";
+                }
+
+                elAura.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
                 return;
             }
 
@@ -488,12 +515,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 
                 elFront.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
                 elBack.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
-                return;
-            }
-            if (category === 'aura') {
-                let elAura = document.getElementById(`layer-aura`);
-                elAura.src = `personnage/aura/aura${data.type}.png`;
-                elAura.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
                 return;
             }
 
@@ -530,7 +551,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                     if (data.type < 1) data.type = max;
                 }
                 
-                // LOGIQUE EXCLUSIVE : Si un costume spécial est choisi, on enlève la veste
                 if (data.themeIdx > 0 && data.type > 0) {
                     state.jacket.type = 0;
                     updateVisual('jacket');
@@ -546,7 +566,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 if (data.type > data.maxType) data.type = min;
                 if (data.type < min) data.type = data.maxType;
 
-                // LOGIQUE EXCLUSIVE : Si une veste est choisie, on enlève le costume spécial
                 if (category === 'jacket' && data.type > 0) {
                     state.special.themeIdx = 0;
                     state.special.type = 0;
