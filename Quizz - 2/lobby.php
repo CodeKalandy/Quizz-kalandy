@@ -85,15 +85,15 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
         .join-btn:active { transform: translateY(8px); box-shadow: 0 0px 0 0 #064e3b; }
 
         /* === ANIMATIONS & EFFETS === */
-        .floating { animation: float 3.5s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
-
+        
+        /* Effet 2: Lévitation Magique */
         .effect-levitation { animation: levitate-strong 2s ease-in-out infinite !important; }
         @keyframes levitate-strong {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-25px) scale(1.05); }
         }
 
+        /* Effet 1: Arc-en-ciel Néon */
         .effect-rainbow { animation: rainbow-glow 3s linear infinite !important; }
         @keyframes rainbow-glow {
             0% { border-color: #ef4444; box-shadow: 0 8px 0 0 #991b1b, 0 0 25px #ef4444; }
@@ -124,28 +124,28 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 Crée ton Bernard
             </div>
             
-            <div class="preview-container floating mb-6 mt-4" id="char-wrapper">
-                <img id="layer-hair-back" src="" class="layer" style="z-index: 5;">
+            <div class="preview-container mb-6 mt-4" id="char-wrapper">
+                <img id="layer-hair-back" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 5;">
                 
-                <img id="layer-skin" src="" class="layer" style="z-index: 10;">
+                <img id="layer-skin" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 10;">
                 
-                <img id="layer-top" src="" class="layer" style="z-index: 20;">
+                <img id="layer-top" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 20;">
                 
-                <img id="layer-jacket" src="" class="layer" style="z-index: 30;">
-                <img id="layer-special" src="" class="layer" style="z-index: 31;">
+                <img id="layer-jacket" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 30;">
+                <img id="layer-special" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 31;">
                 
-                <img id="layer-beard" src="" class="layer" style="z-index: 40;">
-                <img id="layer-mustache" src="" class="layer" style="z-index: 41;">
+                <img id="layer-beard" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 40;">
+                <img id="layer-mustache" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 41;">
                 
-                <img id="layer-mouth" src="" class="layer" style="z-index: 50;">
-                <img id="layer-eyes" src="" class="layer" style="z-index: 51;">
-                <img id="layer-eyebrow" src="" class="layer" style="z-index: 52;">
-                <img id="layer-nose" src="" class="layer" style="z-index: 53;">
-                <img id="layer-hair-front" src="" class="layer" style="z-index: 54;">
+                <img id="layer-mouth" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 50;">
+                <img id="layer-eyes" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 51;">
+                <img id="layer-eyebrow" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 52;">
+                <img id="layer-nose" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 53;">
+                <img id="layer-hair-front" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 54;">
                 
-                <img id="layer-aura" src="" class="layer" style="z-index: 60;">
+                <img id="layer-aura" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 60;">
                 
-                <img id="layer-effect" src="" class="layer" style="z-index: 70;">
+                <img id="layer-effect" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="layer" style="z-index: 70;">
             </div>
 
             <input type="text" id="nick" maxlength="12" placeholder="TON PSEUDO" value="<?= htmlspecialchars($default_nick) ?>"
@@ -441,11 +441,23 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                 document.getElementById('lbl-effect-desc').innerText = effectInfo.desc;
                 
                 let wrapper = document.getElementById('char-wrapper');
+                
+                // On nettoie les anciens effets CSS
                 wrapper.classList.remove('effect-rainbow', 'effect-levitation');
 
+                // On applique le nouvel effet CSS
                 if (data.type === 1) wrapper.classList.add('effect-rainbow');
                 if (data.type === 2) wrapper.classList.add('effect-levitation');
 
+                // On gère la balise image pour éviter les erreurs 404
+                let elEffect = document.getElementById('layer-effect');
+                if (data.type > 2) {
+                    elEffect.src = `personnage/effets/effet${data.type}.png`;
+                    elEffect.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
+                } else {
+                    // Pour 0 (Aucun), 1 (Rainbow), 2 (Levitation), il n'y a pas d'image
+                    elEffect.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+                }
                 return;
             }
 
