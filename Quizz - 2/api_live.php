@@ -44,7 +44,7 @@ switch ($action) {
                 'hair' => (int)($input['hair'] ?? 1),
                 'outfit' => (int)($input['outfit'] ?? 1),
                 'aura' => (int)($input['aura'] ?? 0),
-                'effect' => (int)($input['effect'] ?? 0), // NOUVEAU : Effet Lévitation/Arc-en-ciel
+                'effect' => (int)($input['effect'] ?? 0), // L'effet secret
                 'is_member' => filter_var($input['is_member'] ?? false, FILTER_VALIDATE_BOOLEAN)
             ];
             $state['players'] = $players;

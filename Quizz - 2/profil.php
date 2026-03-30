@@ -1,16 +1,29 @@
 <?php
 require_once 'db.php';
-if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
+if (!isset($_SESSION['user_id'])) { header("Location: index"); exit; }
 
-// Permet de voir le profil d'un autre joueur via ?id=X
 $view_user_id = $_GET['id'] ?? $_SESSION['user_id'];
 $is_own_profile = ($view_user_id == $_SESSION['user_id']);
+
+// Traitement de la sauvegarde du Bernard favori
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_fav']) && $is_own_profile) {
+    $stmt = $pdo->prepare("UPDATE users SET fav_hair=?, fav_outfit=?, fav_aura=?, fav_effect=? WHERE id=?");
+    $stmt->execute([
+        (int)$_POST['fav_hair'], 
+        (int)$_POST['fav_outfit'], 
+        (int)$_POST['fav_aura'], 
+        (int)$_POST['fav_effect'], 
+        $_SESSION['user_id']
+    ]);
+    header("Location: profil?id=" . $_SESSION['user_id']);
+    exit;
+}
 
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$view_user_id]);
 $u = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$u) { die("<div style='text-align:center; margin-top:50px; font-family:sans-serif;'>Joueur introuvable. <a href='dashboard.php'>Retour</a></div>"); }
+if (!$u) { die("<div style='text-align:center; margin-top:50px; font-family:sans-serif;'>Joueur introuvable. <a href='dashboard'>Retour</a></div>"); }
 
 $correct = $u['total_correct'] ?? 0;
 $wrong = $u['total_wrong'] ?? 0;
@@ -38,8 +51,15 @@ foreach ($ranks as $index => $r) {
 
 $precision = ($correct + $wrong > 0) ? round(($correct / ($correct + $wrong)) * 100) : 0;
 
+// Calcul des quêtes
 $aura6_unlocked = ($games >= 10);
 $aura7_unlocked = ($p1 >= 3);
+
+// Récupération du Bernard favori
+$fav_hair = $u['fav_hair'] ?? 1;
+$fav_outfit = $u['fav_outfit'] ?? 1;
+$fav_aura = $u['fav_aura'] ?? 0;
+$fav_effect = $u['fav_effect'] ?? 0;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -68,7 +88,7 @@ $aura7_unlocked = ($p1 >= 3);
                     <?= $is_own_profile ? "Ma Vitrine" : "Profil de " . htmlspecialchars($u['username']) ?>
                 </h1>
             </div>
-            <a href="dashboard.php" class="bg-white px-5 py-2 rounded-xl shadow-lg font-bold text-indigo-900 hover:bg-gray-200 transition">Retour Menu</a>
+            <a href="dashboard" class="bg-white px-5 py-2 rounded-xl shadow-lg font-bold text-indigo-900 hover:bg-gray-200 transition">Retour Menu</a>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -80,21 +100,26 @@ $aura7_unlocked = ($p1 >= 3);
                     <div id="prev-aura-container"></div>
                     <div id="prev-effect-container"></div>
                     <div class="relative w-full h-full overflow-hidden rounded-[15px] flex items-end justify-center z-10 bg-white/20">
-                        <img id="prev-outfit" src="personnage/tenue/tenue1.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;">
-                        <img id="prev-hair" src="personnage/cheveux/cheveux1.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;">
+                        <img id="prev-outfit" src="personnage/tenue/tenue<?= $fav_outfit ?>.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;">
+                        <img id="prev-hair" src="personnage/cheveux/cheveux<?= $fav_hair ?>.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;">
                     </div>
                     <div class="absolute -bottom-3 -right-3 bg-yellow-400 text-black text-[14px] font-black w-8 h-8 flex items-center justify-center rounded-full border-2 border-white z-40 shadow-lg" title="Joueur VIP">★</div>
                 </div>
 
                 <?php if($is_own_profile): ?>
-                <div class="w-full text-left space-y-4">
-                    <p class="text-sm font-bold text-indigo-300 uppercase tracking-widest mb-2 text-center border-b border-white/20 pb-2">Cabine d'essayage complète</p>
+                <form method="POST" class="w-full text-left space-y-4">
+                    <input type="hidden" name="fav_hair" id="inp_hair" value="<?= $fav_hair ?>">
+                    <input type="hidden" name="fav_outfit" id="inp_outfit" value="<?= $fav_outfit ?>">
+                    <input type="hidden" name="fav_aura" id="inp_aura" value="<?= $fav_aura ?>">
+                    <input type="hidden" name="fav_effect" id="inp_effect" value="<?= $fav_effect ?>">
+
+                    <p class="text-sm font-bold text-indigo-300 uppercase tracking-widest mb-2 text-center border-b border-white/20 pb-2">Mon Bernard Favori</p>
                     
                     <div>
                         <p class="text-[10px] font-bold text-gray-400 uppercase">Coupe de cheveux</p>
                         <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
                             <?php for($i=1; $i<=10; $i++): ?>
-                                <button onclick="setHair(<?= $i ?>)" class="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg hover:bg-white/40 transition p-1"><img src="personnage/cheveux/cheveux<?= $i ?>.png" class="w-full h-full object-contain"></button>
+                                <button type="button" onclick="setHair(<?= $i ?>)" class="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg hover:bg-white/40 transition p-1"><img src="personnage/cheveux/cheveux<?= $i ?>.png" class="w-full h-full object-contain"></button>
                             <?php endfor; ?>
                         </div>
                     </div>
@@ -103,7 +128,7 @@ $aura7_unlocked = ($p1 >= 3);
                         <p class="text-[10px] font-bold text-gray-400 uppercase">Tenue</p>
                         <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
                             <?php for($i=1; $i<=10; $i++): ?>
-                                <button onclick="setOutfit(<?= $i ?>)" class="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg hover:bg-white/40 transition p-1"><img src="personnage/tenue/tenue<?= $i ?>.png" class="w-full h-full object-contain"></button>
+                                <button type="button" onclick="setOutfit(<?= $i ?>)" class="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg hover:bg-white/40 transition p-1"><img src="personnage/tenue/tenue<?= $i ?>.png" class="w-full h-full object-contain"></button>
                             <?php endfor; ?>
                         </div>
                     </div>
@@ -111,33 +136,36 @@ $aura7_unlocked = ($p1 >= 3);
                     <div>
                         <p class="text-[10px] font-bold text-gray-400 uppercase">Aura de base</p>
                         <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
-                            <button onclick="setAura(0)" class="w-10 h-10 bg-white/20 rounded-lg hover:bg-white/40 transition font-bold text-xs">Ø</button>
+                            <button type="button" onclick="setAura(0)" class="w-10 h-10 bg-white/20 rounded-lg hover:bg-white/40 transition font-bold text-xs">Ø</button>
                             <?php for($i=1; $i<=5; $i++): ?>
-                                <button onclick="setAura(<?= $i ?>)" class="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg hover:bg-white/40 transition p-1"><img src="personnage/aura/aura<?= $i ?>.png" class="w-full h-full object-contain"></button>
+                                <button type="button" onclick="setAura(<?= $i ?>)" class="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg hover:bg-white/40 transition p-1"><img src="personnage/aura/aura<?= $i ?>.png" class="w-full h-full object-contain"></button>
                             <?php endfor; ?>
                         </div>
                     </div>
 
                     <div>
-                        <p class="text-[10px] font-bold text-gray-400 uppercase">Effet Spécial (Quêtes)</p>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Effet (Quêtes)</p>
                         <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
-                            <button onclick="setEffect(0)" class="w-10 h-10 bg-white/20 rounded-lg hover:bg-white/40 transition font-bold text-xs">Ø</button>
-                            <button onclick="setEffect(1)" class="w-10 h-10 <?= $aura6_unlocked ? 'bg-indigo-500 hover:bg-indigo-400' : 'bg-gray-800 opacity-50 cursor-not-allowed' ?> rounded-lg transition font-bold relative text-xl">
+                            <button type="button" onclick="setEffect(0)" class="w-10 h-10 bg-white/20 rounded-lg hover:bg-white/40 transition font-bold text-xs">Ø</button>
+                            <button type="button" onclick="setEffect(1)" class="w-10 h-10 <?= $aura6_unlocked ? 'bg-indigo-500 hover:bg-indigo-400' : 'bg-gray-800 opacity-50 cursor-not-allowed' ?> rounded-lg transition font-bold relative text-xl">
                                 🌈 <?php if(!$aura6_unlocked) echo '<span class="absolute inset-0 flex items-center justify-center text-lg drop-shadow-md bg-black/40 rounded-lg">🔒</span>'; ?>
                             </button>
-                            <button onclick="setEffect(2)" class="w-10 h-10 <?= $aura7_unlocked ? 'bg-indigo-500 hover:bg-indigo-400' : 'bg-gray-800 opacity-50 cursor-not-allowed' ?> rounded-lg transition font-bold relative text-xl">
+                            <button type="button" onclick="setEffect(2)" class="w-10 h-10 <?= $aura7_unlocked ? 'bg-indigo-500 hover:bg-indigo-400' : 'bg-gray-800 opacity-50 cursor-not-allowed' ?> rounded-lg transition font-bold relative text-xl">
                                 ☁️ <?php if(!$aura7_unlocked) echo '<span class="absolute inset-0 flex items-center justify-center text-lg drop-shadow-md bg-black/40 rounded-lg">🔒</span>'; ?>
                             </button>
                         </div>
                     </div>
-                </div>
+                    
+                    <button type="submit" name="save_fav" class="w-full mt-4 bg-green-500 hover:bg-green-400 text-white font-black py-3 rounded-xl shadow-lg transition transform active:scale-95">
+                        SAUVEGARDER MON BERNARD
+                    </button>
+                </form>
                 <?php else: ?>
-                    <p class="text-sm text-gray-400 italic mt-4">Vous visitez le profil de ce joueur.</p>
+                    <p class="text-sm font-bold text-yellow-400 mt-4 uppercase tracking-widest">Le Bernard Favori de <?= htmlspecialchars($u['username']) ?></p>
                 <?php endif; ?>
             </div>
 
             <div class="lg:col-span-2 flex flex-col gap-6">
-                
                 <div class="bg-white p-6 md:p-8 rounded-3xl shadow-xl border-b-8 border-indigo-600 flex items-center gap-6">
                     <div class="text-6xl drop-shadow-lg">🏆</div>
                     <div class="flex-grow text-gray-900">
@@ -215,8 +243,8 @@ $aura7_unlocked = ($p1 >= 3);
             </div>
         </div>
         
-        <p class="text-center text-xs text-indigo-300 mt-10 font-bold opacity-60">
-            Avatars générés grâce aux assets de <a href="https://pinknose.me" target="_blank" class="hover:underline text-white">pinknose.me</a>
+        <p class="text-center text-xs text-indigo-300 mt-10 font-bold opacity-60 pb-10">
+            Avatars générés grâce aux assets open-source de <a href="https://pinknose.me" target="_blank" class="hover:underline text-white">pinknose.me</a>
         </p>
     </div>
 
@@ -224,10 +252,22 @@ $aura7_unlocked = ($p1 >= 3);
         const aura6Unlocked = <?= $aura6_unlocked ? 'true' : 'false' ?>;
         const aura7Unlocked = <?= $aura7_unlocked ? 'true' : 'false' ?>;
 
-        function setHair(id) { document.getElementById('prev-hair').src = `personnage/cheveux/cheveux${id}.png`; }
-        function setOutfit(id) { document.getElementById('prev-outfit').src = `personnage/tenue/tenue${id}.png`; }
+        window.onload = () => {
+            setAura(<?= $fav_aura ?>);
+            setEffect(<?= $fav_effect ?>);
+        };
+
+        function setHair(id) { 
+            document.getElementById('inp_hair').value = id;
+            document.getElementById('prev-hair').src = `personnage/cheveux/cheveux${id}.png`; 
+        }
+        function setOutfit(id) { 
+            document.getElementById('inp_outfit').value = id;
+            document.getElementById('prev-outfit').src = `personnage/tenue/tenue${id}.png`; 
+        }
         
         function setAura(id) { 
+            document.getElementById('inp_aura').value = id;
             const cont = document.getElementById('prev-aura-container');
             if(id === 0) { cont.innerHTML = ''; }
             else if(id <= 5) {
@@ -237,9 +277,10 @@ $aura7_unlocked = ($p1 >= 3);
         }
 
         function setEffect(id) {
-            if (id === 1 && !aura6Unlocked) return alert("Vous n'avez pas encore débloqué l'Aura Arc-en-Ciel ! Participez à 10 parties pour l'obtenir.");
-            if (id === 2 && !aura7Unlocked) return alert("Vous n'avez pas encore débloqué l'Aura Lévitation ! Gagnez 3 parties pour l'obtenir.");
+            if (id === 1 && !aura6Unlocked) return alert("Vous n'avez pas encore débloqué l'Aura Arc-en-Ciel !");
+            if (id === 2 && !aura7Unlocked) return alert("Vous n'avez pas encore débloqué l'Aura Lévitation !");
 
+            document.getElementById('inp_effect').value = id;
             const cont = document.getElementById('prev-effect-container');
             const wrap = document.getElementById('char-wrapper');
             wrap.classList.remove('aura-float');

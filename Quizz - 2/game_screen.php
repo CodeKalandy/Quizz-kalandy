@@ -19,7 +19,7 @@
         <div class="flex items-center gap-3">
             <div id="my-avatar" class="relative w-12 h-12 bg-white bg-opacity-10 rounded-full border-2 border-indigo-400 flex items-end justify-center"></div>
             <div>
-                <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest leading-none mb-1">Joueur</p>
+                <p class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest leading-none mb-1">Ton Bernard</p>
                 <p id="player-nick" class="font-black text-lg truncate max-w-[120px] leading-none"></p>
             </div>
         </div>
@@ -44,11 +44,18 @@
             <button onclick="toggleChat()" class="text-white/50 hover:text-white text-3xl font-black">&times;</button>
         </div>
         
-        <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 flex flex-col"></div>
+        <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-4 flex flex-col"></div>
         
-        <div class="p-3 border-t border-indigo-500/30 flex gap-2 bg-indigo-950/80">
-            <input type="text" id="chat-input" maxlength="100" class="flex-grow bg-black/50 text-white rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 text-sm" placeholder="Votre message...">
-            <button onclick="sendChat()" class="bg-indigo-600 hover:bg-indigo-500 p-2 rounded-xl transition-colors">➤</button>
+        <div class="bg-indigo-950/80 border-t border-indigo-500/30 flex flex-col">
+            <div class="flex gap-2 px-3 pt-3 justify-center">
+                <button onclick="addEmoji('👏')" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg text-xl transition" title="Applaudissements">👏</button>
+                <button onclick="addEmoji('😱')" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg text-xl transition" title="Choc">😱</button>
+                <button onclick="addEmoji('🤡')" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg text-xl transition" title="Boing">🤡</button>
+            </div>
+            <div class="p-3 flex gap-2">
+                <input type="text" id="chat-input" maxlength="100" class="flex-grow bg-black/50 text-white rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 text-sm" placeholder="Votre message...">
+                <button onclick="sendChat()" class="bg-indigo-600 hover:bg-indigo-500 p-2 rounded-xl transition-colors font-black">➤</button>
+            </div>
         </div>
     </div>
 
@@ -103,19 +110,52 @@
             document.getElementById('chat-panel').classList.toggle('translate-x-full');
         }
 
-        function renderChat(chatList) {
+        function addEmoji(emoji) {
+            const inp = document.getElementById('chat-input');
+            inp.value += emoji;
+            inp.focus();
+        }
+
+        function getAvatarHtml(p, sizeClasses, badgeSize) {
+            let auraHtml = '';
+            let floatClass = p.effect == 2 ? 'aura-float' : '';
+            if (p.aura > 0 && p.aura <= 5) {
+                let zAura = (p.aura == 1 || p.aura == 5) ? 30 : 5;
+                auraHtml = `<img src="personnage/aura/aura${p.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura};">`;
+            }
+            if (p.effect == 1) { auraHtml += `<div class="aura-rainbow"></div>`; }
+            
+            let badge = p.is_member ? `<div class="absolute -bottom-1 -right-1 bg-yellow-400 text-black font-black flex items-center justify-center rounded-full border-2 border-white z-40 shadow-sm ${badgeSize}">★</div>` : '';
+            return `
+            <div class="relative ${sizeClasses} bg-white bg-opacity-20 rounded-full border-2 border-indigo-300 flex items-end justify-center ${floatClass} shrink-0">
+                ${auraHtml}
+                <div class="relative w-full h-full overflow-hidden rounded-full flex items-end justify-center">
+                    <img src="personnage/tenue/tenue${p.outfit}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;">
+                    <img src="personnage/cheveux/cheveux${p.hair}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;">
+                </div>
+                ${badge}
+            </div>`;
+        }
+
+        function renderChat(chatList, players) {
             if(!chatList || chatList.length === 0) return;
             if(chatList.length === lastChatLen) return;
             
             const cont = document.getElementById('chat-messages');
             const wasAtBottom = cont.scrollHeight - cont.scrollTop <= cont.clientHeight + 50;
 
-            cont.innerHTML = chatList.map(c => `
-                <div class="bg-white/10 p-3 rounded-xl rounded-tl-none w-11/12 border border-white/5">
-                    <span class="font-black text-indigo-300 text-xs uppercase tracking-widest">${c.nick}</span>
-                    <p class="text-white text-sm break-words">${c.msg}</p>
-                </div>
-            `).join('');
+            cont.innerHTML = chatList.map(c => {
+                let p = players.find(pl => pl.nickname === c.nick);
+                let avatar = p ? getAvatarHtml(p, 'w-10 h-10', 'hidden') : '';
+                return `
+                <div class="flex gap-3 items-end">
+                    ${avatar}
+                    <div class="bg-white/10 p-3 rounded-xl rounded-bl-none flex-grow border border-white/5">
+                        <span class="font-black text-indigo-300 text-[10px] uppercase tracking-widest">${c.nick}</span>
+                        <p class="text-white text-sm break-words">${c.msg}</p>
+                    </div>
+                </div>`;
+            }).join('');
 
             if(wasAtBottom) cont.scrollTop = cont.scrollHeight;
             lastChatLen = chatList.length;
@@ -127,7 +167,7 @@
             if(!msg) return;
             inp.value = '';
             
-            fetch(`api_live.php?action=send_chat&pin=${pin}`, {
+            fetch(`api_live?action=send_chat&pin=${pin}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ nickname: nick, message: msg })
             }).then(sync);
@@ -138,26 +178,17 @@
         });
 
         function sync() {
-            fetch(`api_live.php?action=get_state&pin=${pin}`)
+            fetch(`api_live?action=get_state&pin=${pin}`)
             .then(r => r.json())
             .then(data => {
-                if(data.chat) renderChat(data.chat);
+                if(data.chat && data.players) renderChat(data.chat, data.players);
 
                 if(data.players) {
                     const me = data.players.find(p => p.nickname === nick);
                     if(me) {
                         isMemberCache = me.is_member;
                         if(!document.getElementById('my-avatar').innerHTML.includes('img')) {
-                            let auraHtml = '';
-                            let floatClass = me.aura == 7 ? 'aura-float' : '';
-                            if (me.aura > 0 && me.aura <= 5) {
-                                let zAura = (me.aura == 1 || me.aura == 5) ? 30 : 5;
-                                auraHtml = `<img src="personnage/aura/aura${me.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura};">`;
-                            } else if (me.aura == 6) {
-                                auraHtml = `<div class="aura-rainbow"></div>`;
-                            }
-                            let badge = me.is_member ? `<div class="absolute -bottom-1 -right-1 bg-yellow-400 text-black text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white z-40 shadow-sm" title="VIP">★</div>` : '';
-                            document.getElementById('my-avatar').innerHTML = `${auraHtml}<div class="relative w-full h-full overflow-hidden rounded-full flex items-end justify-center ${floatClass}"><img src="personnage/tenue/tenue${me.outfit}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;"><img src="personnage/cheveux/cheveux${me.hair}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;"></div>${badge}`;
+                            document.getElementById('my-avatar').innerHTML = getAvatarHtml(me, 'w-full h-full', 'text-[10px] w-5 h-5').replace(/<div class="relative w-full h-full.*?>/g, '').slice(0, -6);
                         }
 
                         let neonClass = me.is_member ? 'neon-vip' : '';
@@ -259,7 +290,7 @@
                     document.getElementById('msg').innerHTML = "PARTIE TERMINÉE !<br><span class='text-sm font-normal normal-case'>Redirection en cours...</span>";
                     
                     localStorage.removeItem('joker_used_' + pin);
-                    setTimeout(() => { window.location.href = "dashboard.php"; }, 5000);
+                    setTimeout(() => { window.location.href = "dashboard"; }, 5000);
                 }
             })
             .catch(err => console.error(err));
@@ -293,7 +324,7 @@
             const responseTime = (Date.now() - startTime) / 1000;
             const isCorrect = (num == correctAnsId);
 
-            fetch(`api_live.php?action=submit_answer&pin=${pin}`, {
+            fetch(`api_live?action=submit_answer&pin=${pin}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 

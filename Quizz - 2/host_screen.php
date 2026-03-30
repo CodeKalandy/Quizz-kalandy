@@ -1,7 +1,7 @@
 <?php
 require_once 'db.php';
 $pin = $_GET['pin'] ?? '';
-if (!$pin) { header("Location: dashboard.php"); exit; }
+if (!$pin) { header("Location: dashboard"); exit; }
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -22,7 +22,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
         .aura-float { animation: float 3s ease-in-out infinite; }
         .neon-vip { text-shadow: 0 0 5px #fff, 0 0 10px #facc15, 0 0 20px #facc15; color: #facc15 !important; }
         
-        /* Bulle de Tchat Flottante */
         @keyframes floatUp { 
             0% { opacity: 0; transform: translateY(20px) scale(0.9); } 
             10% { opacity: 1; transform: translateY(0) scale(1); } 
@@ -34,7 +33,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
 </head>
 <body class="bg-indigo-900 text-white flex flex-col h-screen overflow-hidden font-sans relative">
 
-    <div class="flex justify-between items-center p-6 bg-black bg-opacity-40 shadow-md z-20 relative">
+    <div class="flex justify-between items-center p-6 bg-black bg-opacity-40 shadow-md z-20 relative transition-all duration-500" id="top-bar-info">
         <div class="flex items-center gap-4">
             <img src="images/logo.png" alt="Logo" class="h-16 drop-shadow-md" onerror="this.style.display='none'">
             <div>
@@ -47,18 +46,18 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
         </button>
     </div>
 
-    <div id="floating-chat-container" class="absolute bottom-10 left-10 w-72 flex flex-col-reverse gap-3 z-50 pointer-events-none"></div>
+    <div id="floating-chat-container" class="absolute bottom-10 left-10 w-80 flex flex-col-reverse gap-3 z-50 pointer-events-none"></div>
 
     <button onclick="toggleChat()" class="fixed right-0 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/40 p-4 rounded-l-2xl z-50 transition-all backdrop-blur-md text-2xl shadow-xl border-l border-y border-white/30 pointer-events-auto">
         💬
     </button>
 
-    <div id="chat-panel" class="fixed right-0 top-0 h-full w-80 bg-black/80 backdrop-blur-xl border-l border-white/20 z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+    <div id="chat-panel" class="fixed right-0 top-0 h-full w-96 bg-black/80 backdrop-blur-xl border-l border-white/20 z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
         <div class="p-4 border-b border-white/20 flex justify-between items-center bg-indigo-900/50">
             <h3 class="text-xl font-black text-white uppercase tracking-widest">Tchat</h3>
             <button onclick="toggleChat()" class="text-white/50 hover:text-white text-3xl font-black">&times;</button>
         </div>
-        <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 flex flex-col"></div>
+        <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-4 flex flex-col"></div>
     </div>
 
     <div id="main-area" class="flex-grow flex flex-col items-center justify-center p-6 relative z-10 w-full h-full">
@@ -88,12 +87,12 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
     </div>
 
     <script>
-        // SONS DU JEU ET DU TCHAT
-        const sndTick = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
-        const sndTing = new Audio('https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3');
-        const sndApplause = new Audio('https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3');
-        const sndGasp = new Audio('https://assets.mixkit.co/active_storage/sfx/270/270-preview.mp3'); // 😱
-        const sndBoing = new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'); // 🤡
+        // SONS : Baisse du volume à 30% pour ne pas exploser les tympans
+        const sndTick = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'); sndTick.volume = 0.3;
+        const sndTing = new Audio('https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3'); sndTing.volume = 0.3;
+        const sndApplause = new Audio('https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3'); sndApplause.volume = 0.4;
+        const sndGasp = new Audio('https://assets.mixkit.co/active_storage/sfx/270/270-preview.mp3'); sndGasp.volume = 0.4;
+        const sndBoing = new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'); sndBoing.volume = 0.4;
 
         let currentStatus = '';
         let timerInterval;
@@ -110,63 +109,28 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             document.getElementById('chat-panel').classList.toggle('translate-x-full');
         }
 
-        function showFloatingMessage(nick, text) {
+        // Bulle sur l'écran
+        function showFloatingMessage(avatarHtml, nick, text) {
             const cont = document.getElementById('floating-chat-container');
             const bubble = document.createElement('div');
-            bubble.className = 'chat-bubble bg-white/20 backdrop-blur-md p-3 rounded-2xl rounded-bl-none shadow-xl border border-white/30 text-white';
-            bubble.innerHTML = `<span class="font-black text-yellow-400 text-xs uppercase tracking-widest block mb-1">${nick}</span><p class="text-lg font-bold drop-shadow-md break-words">${text}</p>`;
-            
-            // Ajoute en haut de la pile inversée
+            bubble.className = 'chat-bubble bg-white/20 backdrop-blur-md p-3 rounded-2xl rounded-bl-none shadow-xl border border-white/30 text-white flex items-center gap-3';
+            bubble.innerHTML = `${avatarHtml} <div><span class="font-black text-yellow-400 text-[10px] uppercase tracking-widest block mb-1">${nick}</span><p class="text-md font-bold drop-shadow-md break-words">${text}</p></div>`;
             cont.prepend(bubble);
-            
-            // Auto destruction après 5s
             setTimeout(() => { bubble.remove(); }, 5000);
-        }
-
-        function renderChat(chatList) {
-            if(!chatList || chatList.length === 0) return;
-            
-            if(chatList.length > lastChatLen) {
-                // Il y a de nouveaux messages !
-                for(let i = lastChatLen; i < chatList.length; i++) {
-                    let msg = chatList[i];
-                    
-                    // 🔊 Réactions Audio Emojis
-                    if(msg.msg.includes('👏')) { sndApplause.currentTime = 0; sndApplause.play().catch(()=>{}); }
-                    if(msg.msg.includes('😱')) { sndGasp.currentTime = 0; sndGasp.play().catch(()=>{}); }
-                    if(msg.msg.includes('🤡')) { sndBoing.currentTime = 0; sndBoing.play().catch(()=>{}); }
-
-                    // Afficher la bulle flottante sur l'écran
-                    showFloatingMessage(msg.nick, msg.msg);
-                }
-            }
-
-            const cont = document.getElementById('chat-messages');
-            const wasAtBottom = cont.scrollHeight - cont.scrollTop <= cont.clientHeight + 50;
-
-            cont.innerHTML = chatList.map(c => `
-                <div class="bg-white/10 p-3 rounded-xl rounded-tl-none w-11/12 border border-white/5">
-                    <span class="font-black text-indigo-300 text-xs uppercase tracking-widest">${c.nick}</span>
-                    <p class="text-white text-sm break-words">${c.msg}</p>
-                </div>
-            `).join('');
-
-            if(wasAtBottom) cont.scrollTop = cont.scrollHeight;
-            lastChatLen = chatList.length;
         }
 
         function getAvatarHtml(p, sizeClasses, badgeSize) {
             let auraHtml = '';
-            let floatClass = p.aura == 7 ? 'aura-float' : '';
+            let floatClass = p.effect == 2 ? 'aura-float' : '';
             if (p.aura > 0 && p.aura <= 5) {
                 let zAura = (p.aura == 1 || p.aura == 5) ? 30 : 5;
                 auraHtml = `<img src="personnage/aura/aura${p.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura};">`;
-            } else if (p.aura == 6) {
-                auraHtml = `<div class="aura-rainbow"></div>`;
             }
+            if (p.effect == 1) { auraHtml += `<div class="aura-rainbow"></div>`; }
+            
             let badge = p.is_member ? `<div class="absolute -bottom-1 -right-1 bg-yellow-400 text-black font-black flex items-center justify-center rounded-full border-2 border-white z-40 shadow-lg ${badgeSize}">★</div>` : '';
             return `
-            <div class="relative ${sizeClasses} bg-white bg-opacity-20 rounded-full border-2 border-indigo-300 flex items-end justify-center ${floatClass}">
+            <div class="relative ${sizeClasses} bg-white bg-opacity-20 rounded-full border-2 border-indigo-300 flex items-end justify-center ${floatClass} shrink-0">
                 ${auraHtml}
                 <div class="relative w-full h-full overflow-hidden rounded-full flex items-end justify-center">
                     <img src="personnage/tenue/tenue${p.outfit}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;">
@@ -176,11 +140,48 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             </div>`;
         }
 
+        function renderChat(chatList, players) {
+            if(!chatList || chatList.length === 0) return;
+            
+            if(chatList.length > lastChatLen) {
+                for(let i = lastChatLen; i < chatList.length; i++) {
+                    let msg = chatList[i];
+                    let p = players.find(pl => pl.nickname === msg.nick);
+                    let avatar = p ? getAvatarHtml(p, 'w-10 h-10', 'hidden') : '';
+
+                    if(msg.msg.includes('👏')) { sndApplause.currentTime = 0; sndApplause.play().catch(()=>{}); }
+                    if(msg.msg.includes('😱')) { sndGasp.currentTime = 0; sndGasp.play().catch(()=>{}); }
+                    if(msg.msg.includes('🤡')) { sndBoing.currentTime = 0; sndBoing.play().catch(()=>{}); }
+
+                    showFloatingMessage(avatar, msg.nick, msg.msg);
+                }
+            }
+
+            const cont = document.getElementById('chat-messages');
+            const wasAtBottom = cont.scrollHeight - cont.scrollTop <= cont.clientHeight + 50;
+
+            cont.innerHTML = chatList.map(c => {
+                let p = players.find(pl => pl.nickname === c.nick);
+                let avatar = p ? getAvatarHtml(p, 'w-10 h-10', 'hidden') : '';
+                return `
+                <div class="flex gap-3 items-end">
+                    ${avatar}
+                    <div class="bg-white/10 p-3 rounded-xl rounded-bl-none flex-grow border border-white/5">
+                        <span class="font-black text-indigo-300 text-[10px] uppercase tracking-widest">${c.nick}</span>
+                        <p class="text-white text-sm break-words">${c.msg}</p>
+                    </div>
+                </div>`;
+            }).join('');
+
+            if(wasAtBottom) cont.scrollTop = cont.scrollHeight;
+            lastChatLen = chatList.length;
+        }
+
         function sync() {
-            fetch(`api_live.php?action=get_state&pin=<?= htmlspecialchars($pin) ?>`)
+            fetch(`api_live?action=get_state&pin=<?= htmlspecialchars($pin) ?>`)
             .then(r => r.json())
             .then(data => {
-                if(data.chat) renderChat(data.chat);
+                if(data.chat && data.players) renderChat(data.chat, data.players);
 
                 if(currentStatus !== data.status) {
                     currentStatus = data.status;
@@ -191,10 +192,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                         renderLeaderboardTable(data);
                     }
                 } else if (data.status === 'finished') {
-                    if(!podiumAnimated) {
-                        podiumAnimated = true;
-                        renderPodium(data);
-                    }
+                    if(!podiumAnimated) { podiumAnimated = true; renderPodium(data); }
                 }
             });
         }
@@ -213,6 +211,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             document.getElementById('timer-circle').classList.remove('text-red-500', 'border-red-500');
             
             const btnNext = document.getElementById('btn-next');
+            const topBar = document.getElementById('top-bar-info');
             clearTimeout(transitionTimeout);
             clearInterval(timerInterval);
 
@@ -220,6 +219,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
 
             if (data.status === 'reveal') {
                 cleanUpAnswers();
+                topBar.classList.remove('opacity-30', 'scale-75', 'origin-top-left');
                 btnNext.classList.add('hidden');
                 document.getElementById('q-title').innerText = data.question.question_text;
                 document.getElementById('q-title').classList.remove('hidden');
@@ -231,13 +231,15 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                     document.getElementById('q-img').classList.remove('hidden');
                 } else {
                     document.getElementById('q-img').src = '';
-                    document.getElementById('q-img').classList.add('hidden');
                 }
                 
-                transitionTimeout = setTimeout(() => { fetch(`api_live.php?action=activate_playing&pin=<?= htmlspecialchars($pin) ?>`).then(sync); }, 2000);
+                transitionTimeout = setTimeout(() => { fetch(`api_live?action=activate_playing&pin=<?= htmlspecialchars($pin) ?>`).then(sync); }, 2000);
             } 
             else if (data.status === 'playing') {
                 cleanUpAnswers();
+                // Rentrer le PIN pour laisser place au jeu
+                topBar.classList.add('opacity-30', 'scale-75', 'origin-top-left');
+                
                 btnNext.classList.add('hidden');
                 document.getElementById('q-title').innerText = data.question.question_text;
                 document.getElementById('q-title').classList.remove('hidden');
@@ -265,12 +267,14 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                     }
                     if(timeLeft <= 0) {
                         clearInterval(timerInterval);
-                        fetch(`api_live.php?action=show_answer&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
+                        fetch(`api_live?action=show_answer&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
                     }
                 }, 1000);
             } 
             else if (data.status === 'show_answer') {
                 sndTing.play().catch(e => {});
+                topBar.classList.remove('opacity-30', 'scale-75', 'origin-top-left');
+
                 document.getElementById('q-title').innerText = data.question.question_text;
                 document.getElementById('q-title').classList.remove('hidden');
                 if (data.question.image_url && data.question.image_url.trim() !== '') {
@@ -303,29 +307,31 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
 
                 btnNext.classList.remove('hidden');
                 btnNext.innerText = isLastQuestion ? "🏆 VOIR LE PODIUM" : "Voir le classement";
-                btnNext.onclick = () => fetch(`api_live.php?action=show_leaderboard&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
+                btnNext.onclick = () => fetch(`api_live?action=show_leaderboard&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
             }
             else if (data.status === 'leaderboard') {
+                topBar.classList.remove('opacity-30', 'scale-75', 'origin-top-left');
                 btnNext.classList.remove('hidden');
                 document.getElementById('leaderboard').classList.remove('hidden');
 
                 if (isLastQuestion) {
                     btnNext.innerText = "🏆 VOIR LE PODIUM";
-                    btnNext.onclick = () => fetch(`api_live.php?action=next_step&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
+                    btnNext.onclick = () => fetch(`api_live?action=next_step&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
                     document.getElementById('leaderboard-title').innerText = "FIN DES QUESTIONS !";
                     document.getElementById('players-list').innerHTML = "<div class='text-center mt-12 flex flex-col items-center'><span class='text-8xl mb-6'>⏳</span><p class='text-3xl font-black text-indigo-300 animate-pulse uppercase tracking-widest'>Préparation des résultats...</p></div>";
                 } else {
                     btnNext.innerText = "Question suivante";
-                    btnNext.onclick = () => fetch(`api_live.php?action=next_step&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
+                    btnNext.onclick = () => fetch(`api_live?action=next_step&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
                     document.getElementById('leaderboard-title').innerText = "📊 CLASSEMENT PROVISOIRE 📊";
                     renderLeaderboardTable(data);
                 }
             } 
             else if (data.status === 'finished') {
+                topBar.classList.remove('opacity-30', 'scale-75', 'origin-top-left');
                 btnNext.classList.remove('hidden');
                 btnNext.innerText = "Retour au menu";
                 btnNext.classList.replace('bg-indigo-500', 'bg-red-500');
-                btnNext.onclick = () => window.location.href = 'dashboard.php';
+                btnNext.onclick = () => window.location.href = 'dashboard';
                 
                 document.getElementById('leaderboard').classList.remove('hidden');
                 document.getElementById('leaderboard-title').innerText = "🏆 PODIUM FINAL 🏆";
@@ -342,7 +348,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                     <thead class="bg-indigo-900 bg-opacity-50 text-indigo-200">
                         <tr>
                             <th class="p-4 font-black uppercase tracking-widest text-center w-24">Rang</th>
-                            <th class="p-4 font-black uppercase tracking-widest text-center w-24">Avatar</th>
+                            <th class="p-4 font-black uppercase tracking-widest text-center w-24">Bernard</th>
                             <th class="p-4 font-black uppercase tracking-widest">Joueur</th>
                             <th class="p-4 font-black uppercase tracking-widest text-right">Score</th>
                         </tr>

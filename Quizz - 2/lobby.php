@@ -3,6 +3,19 @@ require_once 'db.php';
 $pin = $_GET['pin'] ?? '';
 $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
 $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
+
+// Charger le Bernard favori si connecté
+$fav_hair = 1; $fav_outfit = 1; $fav_aura = 0; $fav_effect = 0;
+if ($is_member === 'true') {
+    $stmt = $pdo->prepare("SELECT fav_hair, fav_outfit, fav_aura, fav_effect FROM users WHERE id=?");
+    $stmt->execute([$_SESSION['user_id']]);
+    if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $fav_hair = $row['fav_hair'] ?? 1;
+        $fav_outfit = $row['fav_outfit'] ?? 1;
+        $fav_aura = $row['fav_aura'] ?? 0;
+        $fav_effect = $row['fav_effect'] ?? 0;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -11,7 +24,7 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
-    <title>Avatar - Bernard Quizz</title>
+    <title>Ton Bernard - Bernard Quizz</title>
     <style>
         .preview-container { width: 120px; height: 120px; position: relative; margin: 0 auto 20px; background: #f3f4f6; border-radius: 20px; overflow: visible; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -21,10 +34,10 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
         .aura-float { animation: float 3s ease-in-out infinite; }
     </style>
 </head>
-<body class="bg-indigo-600 min-h-screen text-white flex flex-col items-center p-4 font-sans">
+<body class="bg-indigo-600 min-h-screen text-white flex flex-col items-center p-4 font-sans pb-16">
 
     <img src="images/logo.png" class="h-16 mb-2 object-contain drop-shadow-md">
-    <h1 class="text-2xl font-black mb-4 uppercase tracking-widest text-center" style="font-family: 'Caveat', cursive; font-size: 2rem;">Crée ton personnage</h1>
+    <h1 class="text-2xl font-black mb-4 uppercase tracking-widest text-center" style="font-family: 'Caveat', cursive; font-size: 2rem;">Crée ton Bernard</h1>
 
     <div class="bg-white text-gray-800 p-6 rounded-3xl shadow-2xl w-full max-w-md">
         
@@ -32,8 +45,8 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
             <div id="prev-aura-container"></div>
             <div id="prev-effect-container"></div>
             <div class="relative w-full h-full overflow-hidden rounded-[15px] flex items-end justify-center z-10">
-                <img id="prev-outfit" src="personnage/tenue/tenue1.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;">
-                <img id="prev-hair" src="personnage/cheveux/cheveux1.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;">
+                <img id="prev-outfit" src="personnage/tenue/tenue<?= $fav_outfit ?>.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;">
+                <img id="prev-hair" src="personnage/cheveux/cheveux<?= $fav_hair ?>.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;">
             </div>
             <?php if($is_member === 'true'): ?>
                 <div class="absolute -bottom-3 -right-3 bg-yellow-400 text-black text-[14px] font-black w-8 h-8 flex items-center justify-center rounded-full border-2 border-white z-40 shadow-lg" title="Joueur VIP">★</div>
@@ -100,18 +113,26 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
             </div>
 
             <button onclick="join()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg transform active:scale-95 transition-all uppercase tracking-widest">
-                C'est parti !
+                Rejoindre la salle !
             </button>
-            
-            <p class="text-center text-xs text-gray-400 mt-4 font-bold">
-                Avatars générés grâce aux assets de <a href="https://pinknose.me" target="_blank" class="text-indigo-400 hover:underline">pinknose.me</a>
-            </p>
         </div>
     </div>
 
+    <p class="absolute bottom-4 text-center text-xs text-indigo-300 font-bold opacity-60 w-full">
+        Modèles de Bernard basés sur le projet open-source <a href="https://pinknose.me" target="_blank" class="text-white hover:underline">pinknose.me</a>
+    </p>
+
     <script>
         const isMember = <?= $is_member ?>;
-        let hair = 1, outfit = 1, aura = 0, effect = 0;
+        
+        // Initialiser avec les favoris récupérés
+        let hair = <?= $fav_hair ?>, outfit = <?= $fav_outfit ?>, aura = <?= $fav_aura ?>, effect = <?= $fav_effect ?>;
+
+        // Appliquer les favoris visuellement au chargement
+        window.onload = () => {
+            setAura(aura);
+            setEffect(effect);
+        };
 
         function setHair(id) { 
             if (!isMember && id > 5) return alert("Cette coiffure est réservée aux VIP !");
@@ -136,6 +157,7 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
             const cont = document.getElementById('prev-effect-container');
             const wrap = document.getElementById('char-wrapper');
             wrap.classList.remove('aura-float');
+            
             if(id === 0) { cont.innerHTML = ''; }
             else if (id === 1) { cont.innerHTML = `<div class="aura-rainbow"></div>`; }
             else if (id === 2) { cont.innerHTML = ''; wrap.classList.add('aura-float'); }
@@ -146,7 +168,7 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
             if(!nick) return alert("Hé ! Il nous faut ton pseudo !");
             event.target.innerText = "Connexion..."; event.target.disabled = true;
 
-            fetch(`api_live.php?action=join&pin=<?= htmlspecialchars($pin) ?>`, {
+            fetch(`api_live?action=join&pin=<?= htmlspecialchars($pin) ?>`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ nickname: nick, hair: hair, outfit: outfit, aura: aura, effect: effect, is_member: isMember })
             }).then(async r => {
@@ -155,7 +177,7 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
             }).then(data => {
                 if(data.status === 'success') {
                     try { localStorage.setItem('quiz_nickname', nick); } catch(e) {}
-                    window.location.href = `game_screen.php?pin=<?= htmlspecialchars($pin) ?>&nick=${encodeURIComponent(nick)}`;
+                    window.location.href = `game_screen?pin=<?= htmlspecialchars($pin) ?>&nick=${encodeURIComponent(nick)}`;
                 } else { throw new Error(); }
             }).catch(err => {
                 alert("Impossible de rejoindre."); document.querySelector('button').disabled = false; document.querySelector('button').innerText = "C'est parti !";
