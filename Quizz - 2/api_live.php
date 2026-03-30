@@ -22,8 +22,9 @@ if (file_exists($gameStateFile)) {
         'wrong_counts' => new stdClass(),
         'response_times' => new stdClass(),
         'streaks' => new stdClass(), 
-        'hearts' => new stdClass(), // ❤️ Pour le mode survie
-        'answers' => new stdClass(), 
+        'hearts' => new stdClass(),
+        'answers' => new stdClass(),
+        'chat' => [], // 💬 NOUVEAU : Historique du tchat
         'status' => 'lobby', 
         'current_q_index' => -1, 
         'last_update' => time()
@@ -46,6 +47,7 @@ switch ($action) {
                 'is_member' => filter_var($input['is_member'] ?? false, FILTER_VALIDATE_BOOLEAN)
             ];
             $state['players'] = $players;
+            
             $scoresArr[$nick] = 0;
             $state['scores'] = (object)$scoresArr;
             $state['correct_counts'] = (object)array_merge((array)($state['correct_counts'] ?? []), [$nick => 0]);
@@ -72,6 +74,7 @@ switch ($action) {
         $state['wrong_counts'] = new stdClass();
         $state['response_times'] = new stdClass();
         $state['streaks'] = new stdClass(); 
+        $state['chat'] = []; // On vide le tchat au début
         
         $hearts = [];
         foreach($state['players'] as $p) { $hearts[$p['nickname']] = 3; }
@@ -80,6 +83,21 @@ switch ($action) {
 
     case 'activate_playing':
         $state['status'] = 'playing';
+        break;
+
+    // 💬 NOUVEAU : Envoi d'un message dans le Tchat
+    case 'send_chat':
+        $input = json_decode(file_get_contents('php://input'), true) ?: [];
+        $nick = htmlspecialchars($input['nickname'] ?? '');
+        $msg = htmlspecialchars(trim($input['message'] ?? ''));
+        
+        if ($nick && $msg) {
+            $chat = (array)($state['chat'] ?? []);
+            $chat[] = ['nick' => $nick, 'msg' => $msg, 'time' => time()];
+            // On ne garde que les 20 derniers messages pour pas alourdir
+            if (count($chat) > 20) { array_shift($chat); }
+            $state['chat'] = $chat;
+        }
         break;
 
     case 'submit_answer':
@@ -150,7 +168,6 @@ switch ($action) {
         }
         $state['answer_counts'] = $counts;
 
-        // ❤️ LOGIQUE DU MODE SURVIE
         if (($state['mode'] ?? 'classique') === 'survie') {
             $hearts = (array)($state['hearts'] ?? []);
             $elim = (array)($state['eliminated'] ?? []);
@@ -162,7 +179,7 @@ switch ($action) {
                 $ans = $currentQAnswers[$n] ?? null;
                 $isCorrect = ($ans == $state['question']['correct_answer']);
                 
-                if (!$isCorrect) { // Si faux ou s'il n'a pas répondu
+                if (!$isCorrect) { 
                     $hearts[$n] = max(0, ($hearts[$n] ?? 3) - 1);
                     if ($hearts[$n] == 0) { $elim[] = $n; }
                 }

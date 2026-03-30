@@ -24,13 +24,31 @@
             </div>
         </div>
         <div class="flex items-center gap-2 md:gap-4">
-            <button id="btn-joker" onclick="useJoker()" class="hidden bg-purple-600 hover:bg-purple-500 text-white font-black px-3 py-2 rounded-xl shadow-lg border-2 border-purple-400 text-xs uppercase transition-transform active:scale-95">
+            <button id="btn-joker" onclick="useJoker()" class="hidden bg-gray-600 hover:bg-gray-500 text-white font-black px-3 py-2 rounded-xl shadow-lg border-2 border-gray-400 text-xs uppercase transition-transform active:scale-95">
                 🃏 50/50
             </button>
             <div class="text-right ml-2">
                 <p id="score-label" class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest leading-none mb-1">Score</p>
                 <p id="my-score" class="font-black text-2xl text-yellow-400 leading-none transition-all duration-500 tracking-widest">0</p>
             </div>
+        </div>
+    </div>
+
+    <button onclick="toggleChat()" class="fixed right-0 top-1/3 transform -translate-y-1/2 bg-indigo-600/80 hover:bg-indigo-500 p-3 rounded-l-2xl z-50 transition-all backdrop-blur-md shadow-xl border-l border-y border-indigo-300">
+        💬
+    </button>
+
+    <div id="chat-panel" class="fixed right-0 top-0 h-full w-72 md:w-80 bg-black/90 backdrop-blur-xl border-l border-indigo-500/50 z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="p-4 border-b border-indigo-500/30 flex justify-between items-center bg-indigo-900/50">
+            <h3 class="text-lg font-black text-white uppercase tracking-widest">Tchat Public</h3>
+            <button onclick="toggleChat()" class="text-white/50 hover:text-white text-3xl font-black">&times;</button>
+        </div>
+        
+        <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 flex flex-col"></div>
+        
+        <div class="p-3 border-t border-indigo-500/30 flex gap-2 bg-indigo-950/80">
+            <input type="text" id="chat-input" maxlength="100" class="flex-grow bg-black/50 text-white rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 text-sm" placeholder="Votre message...">
+            <button onclick="sendChat()" class="bg-indigo-600 hover:bg-indigo-500 p-2 rounded-xl transition-colors">➤</button>
         </div>
     </div>
 
@@ -44,19 +62,19 @@
     
     <div id="grid-wrapper" class="relative hidden h-[70%] pb-6 px-4 w-full max-w-4xl mx-auto z-10">
         <div id="grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 h-full overflow-y-auto transition-all duration-300">
-            <button id="opt1-btn" onclick="submitAns(1)" class="bg-red-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#991b1b] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
-                <span class="text-5xl md:text-6xl drop-shadow-md mr-6">▲</span>
+            <button id="opt1-btn" onclick="submitAns(1)" class="bg-purple-600 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#7e22ce] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
+                <span class="text-5xl md:text-6xl drop-shadow-md mr-6">✦</span>
                 <span id="opt1-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
             </button>
-            <button id="opt2-btn" onclick="submitAns(2)" class="bg-blue-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#1e40af] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
-                <span class="text-5xl md:text-6xl drop-shadow-md mr-6">◆</span>
+            <button id="opt2-btn" onclick="submitAns(2)" class="bg-pink-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#be185d] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
+                <span class="text-5xl md:text-6xl drop-shadow-md mr-6">⬢</span>
                 <span id="opt2-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
             </button>
-            <button id="opt3-btn" onclick="submitAns(3)" class="bg-yellow-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#854d0e] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
-                <span class="text-5xl md:text-6xl drop-shadow-md mr-6">●</span>
+            <button id="opt3-btn" onclick="submitAns(3)" class="bg-cyan-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#0e7490] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
+                <span class="text-5xl md:text-6xl drop-shadow-md mr-6">⬤</span>
                 <span id="opt3-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
             </button>
-            <button id="opt4-btn" onclick="submitAns(4)" class="bg-green-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#166534] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
+            <button id="opt4-btn" onclick="submitAns(4)" class="bg-orange-500 rounded-3xl p-6 md:p-8 text-white font-bold shadow-[0_8px_0_0_#c2410c] active:shadow-none active:translate-y-2 transition-all flex items-center text-left">
                 <span class="text-5xl md:text-6xl drop-shadow-md mr-6">■</span>
                 <span id="opt4-text" class="text-xl md:text-2xl leading-tight flex-grow drop-shadow-sm"></span>
             </button>
@@ -76,11 +94,55 @@
 
         const funnyPhrases = ["Enregistré ! Croise les doigts...", "T'es un rapide toi !", "C'est noté, champion !", "Réponse verrouillée.", "Plus qu'à attendre..."];
 
+        // Gestion du Tchat
+        let isChatOpen = false;
+        let lastChatLen = 0;
+
+        function toggleChat() {
+            isChatOpen = !isChatOpen;
+            document.getElementById('chat-panel').classList.toggle('translate-x-full');
+        }
+
+        function renderChat(chatList) {
+            if(!chatList || chatList.length === 0) return;
+            if(chatList.length === lastChatLen) return;
+            
+            const cont = document.getElementById('chat-messages');
+            const wasAtBottom = cont.scrollHeight - cont.scrollTop <= cont.clientHeight + 50;
+
+            cont.innerHTML = chatList.map(c => `
+                <div class="bg-white/10 p-3 rounded-xl rounded-tl-none w-11/12 border border-white/5">
+                    <span class="font-black text-indigo-300 text-xs uppercase tracking-widest">${c.nick}</span>
+                    <p class="text-white text-sm break-words">${c.msg}</p>
+                </div>
+            `).join('');
+
+            if(wasAtBottom) cont.scrollTop = cont.scrollHeight;
+            lastChatLen = chatList.length;
+        }
+
+        function sendChat() {
+            const inp = document.getElementById('chat-input');
+            const msg = inp.value.trim();
+            if(!msg) return;
+            inp.value = '';
+            
+            fetch(`api_live.php?action=send_chat&pin=${pin}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nickname: nick, message: msg })
+            }).then(sync);
+        }
+
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') sendChat();
+        });
+
         function sync() {
             fetch(`api_live.php?action=get_state&pin=${pin}`)
             .then(r => r.json())
             .then(data => {
-                
+                if(data.chat) renderChat(data.chat);
+
                 if(data.players) {
                     const me = data.players.find(p => p.nickname === nick);
                     if(me) {
@@ -95,7 +157,6 @@
                                 auraHtml = `<div class="aura-rainbow"></div>`;
                             }
                             let badge = me.is_member ? `<div class="absolute -bottom-1 -right-1 bg-yellow-400 text-black text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white z-40 shadow-sm" title="VIP">★</div>` : '';
-                            
                             document.getElementById('my-avatar').innerHTML = `${auraHtml}<div class="relative w-full h-full overflow-hidden rounded-full flex items-end justify-center ${floatClass}"><img src="personnage/tenue/tenue${me.outfit}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 10;"><img src="personnage/cheveux/cheveux${me.hair}.png" class="absolute w-[90%] h-[90%] object-contain bottom-0" style="z-index: 20;"></div>${badge}`;
                         }
 
@@ -105,7 +166,6 @@
                     }
                 }
 
-                // Affichage Score vs Coeurs
                 if (data.mode === 'survie') {
                     document.getElementById('score-label').innerText = 'Vies';
                     let h = data.hearts ? (data.hearts[nick] || 0) : 0;

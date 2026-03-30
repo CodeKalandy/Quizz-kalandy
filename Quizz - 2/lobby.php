@@ -74,14 +74,22 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
                 </div>
                 <div class="flex flex-wrap justify-center gap-2 py-1">
                     <div onclick="setAura(0)" class="w-12 h-12 md:w-14 md:h-14 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer font-bold text-gray-400">Ø</div>
+                    
                     <?php for($i=1; $i<=5; $i++): $locked = ($is_member === 'false'); ?>
                         <div onclick="setAura(<?= $i ?>)" class="relative w-12 h-12 md:w-14 md:h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all p-1 <?= $locked ? 'opacity-60 grayscale' : '' ?>">
                             <img src="personnage/aura/aura<?= $i ?>.png" class="w-full h-full object-contain">
                             <?php if($locked): ?><div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10 rounded-xl"><span class="text-xl drop-shadow-md">🔒</span></div><?php endif; ?>
                         </div>
                     <?php endfor; ?>
-                    <div onclick="setAura(6)" class="relative w-12 h-12 md:w-14 md:h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all flex items-center justify-center text-2xl <?= ($is_member === 'false') ? 'opacity-60 grayscale' : '' ?>">🌈<?php if($is_member === 'false'): ?><div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10 rounded-xl"><span class="text-xl drop-shadow-md">🔒</span></div><?php endif; ?></div>
-                    <div onclick="setAura(7)" class="relative w-12 h-12 md:w-14 md:h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all flex items-center justify-center text-2xl <?= ($is_member === 'false') ? 'opacity-60 grayscale' : '' ?>">☁️<?php if($is_member === 'false'): ?><div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10 rounded-xl"><span class="text-xl drop-shadow-md">🔒</span></div><?php endif; ?></div>
+
+                    <div onclick="alert('Bientôt ! Débloqué via une quête secrète...')" class="relative w-12 h-12 md:w-14 md:h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all flex items-center justify-center text-2xl opacity-60 grayscale">
+                        🌈
+                        <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-xl"><span class="text-xl drop-shadow-md">🔒</span></div>
+                    </div>
+                    <div onclick="alert('Bientôt ! Débloqué via une quête secrète...')" class="relative w-12 h-12 md:w-14 md:h-14 bg-gray-50 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-indigo-400 transition-all flex items-center justify-center text-2xl opacity-60 grayscale">
+                        ☁️
+                        <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-xl"><span class="text-xl drop-shadow-md">🔒</span></div>
+                    </div>
                 </div>
             </div>
 
@@ -114,10 +122,6 @@ $is_member = isset($_SESSION['user_id']) ? 'true' : 'false';
             else if(id <= 5) {
                 let zIndex = (id == 1 || id == 5) ? 30 : 5;
                 cont.innerHTML = `<img src="personnage/aura/aura${id}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zIndex};">`;
-            } else if (id === 6) {
-                cont.innerHTML = `<div class="aura-rainbow"></div>`;
-            } else if (id === 7) {
-                cont.innerHTML = ''; wrap.classList.add('aura-float');
             }
         }
 

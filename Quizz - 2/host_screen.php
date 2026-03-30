@@ -16,20 +16,27 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
         .animate-pop-in { animation: popIn 0.8s ease-out forwards; }
         .silhouette { filter: brightness(0); transition: filter 3s ease-in-out; }
         .revealed { filter: brightness(1); }
-        
-        /* Cosmétiques VIP CSS */
         @keyframes rainbow { 100% { filter: hue-rotate(360deg); } }
         .aura-rainbow { position: absolute; top: -15%; left: -15%; width: 130%; height: 130%; border-radius: 50%; box-shadow: 0 0 20px 5px #f43f5e, inset 0 0 20px 5px #f43f5e; animation: rainbow 2.5s linear infinite; z-index: 5; }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
         .aura-float { animation: float 3s ease-in-out infinite; }
         .neon-vip { text-shadow: 0 0 5px #fff, 0 0 10px #facc15, 0 0 20px #facc15; color: #facc15 !important; }
+        
+        /* Bulle de Tchat Flottante */
+        @keyframes floatUp { 
+            0% { opacity: 0; transform: translateY(20px) scale(0.9); } 
+            10% { opacity: 1; transform: translateY(0) scale(1); } 
+            90% { opacity: 1; transform: translateY(-30px); } 
+            100% { opacity: 0; transform: translateY(-50px); } 
+        }
+        .chat-bubble { animation: floatUp 5s ease-out forwards; }
     </style>
 </head>
 <body class="bg-indigo-900 text-white flex flex-col h-screen overflow-hidden font-sans relative">
 
     <div class="flex justify-between items-center p-6 bg-black bg-opacity-40 shadow-md z-20 relative">
         <div class="flex items-center gap-4">
-            <img src="images/logo.png" alt="Logo" class="h-16 drop-shadow-md">
+            <img src="images/logo.png" alt="Logo" class="h-16 drop-shadow-md" onerror="this.style.display='none'">
             <div>
                 <span class="text-xs font-black text-gray-400 uppercase tracking-widest">CODE PIN DU SALON</span>
                 <h1 class="text-5xl font-black text-yellow-400 tracking-widest drop-shadow-lg"><?= htmlspecialchars($pin) ?></h1>
@@ -38,6 +45,20 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
         <button id="btn-next" class="hidden bg-indigo-500 hover:bg-indigo-400 px-8 py-4 rounded-2xl font-black text-xl uppercase transition shadow-lg transform hover:scale-105">
             Suivant
         </button>
+    </div>
+
+    <div id="floating-chat-container" class="absolute bottom-10 left-10 w-72 flex flex-col-reverse gap-3 z-50 pointer-events-none"></div>
+
+    <button onclick="toggleChat()" class="fixed right-0 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/40 p-4 rounded-l-2xl z-50 transition-all backdrop-blur-md text-2xl shadow-xl border-l border-y border-white/30 pointer-events-auto">
+        💬
+    </button>
+
+    <div id="chat-panel" class="fixed right-0 top-0 h-full w-80 bg-black/80 backdrop-blur-xl border-l border-white/20 z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="p-4 border-b border-white/20 flex justify-between items-center bg-indigo-900/50">
+            <h3 class="text-xl font-black text-white uppercase tracking-widest">Tchat</h3>
+            <button onclick="toggleChat()" class="text-white/50 hover:text-white text-3xl font-black">&times;</button>
+        </div>
+        <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 flex flex-col"></div>
     </div>
 
     <div id="main-area" class="flex-grow flex flex-col items-center justify-center p-6 relative z-10 w-full h-full">
@@ -50,10 +71,10 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
         <img id="q-img" src="" class="hidden max-h-72 rounded-3xl shadow-2xl mb-8 object-cover border-8 border-white">
 
         <div id="q-answers" class="hidden w-full max-w-5xl grid grid-cols-2 gap-6 mb-8">
-            <div id="ans1" class="bg-red-500 p-8 rounded-3xl text-3xl font-bold flex items-center shadow-xl transition-all duration-300"><span class="text-5xl mr-6 drop-shadow-md">▲</span><span class="text drop-shadow-md"></span></div>
-            <div id="ans2" class="bg-blue-500 p-8 rounded-3xl text-3xl font-bold flex items-center shadow-xl transition-all duration-300"><span class="text-5xl mr-6 drop-shadow-md">◆</span><span class="text drop-shadow-md"></span></div>
-            <div id="ans3" class="bg-yellow-500 p-8 rounded-3xl text-3xl font-bold flex items-center shadow-xl transition-all duration-300"><span class="text-5xl mr-6 drop-shadow-md">●</span><span class="text drop-shadow-md"></span></div>
-            <div id="ans4" class="bg-green-500 p-8 rounded-3xl text-3xl font-bold flex items-center shadow-xl transition-all duration-300"><span class="text-5xl mr-6 drop-shadow-md">■</span><span class="text drop-shadow-md"></span></div>
+            <div id="ans1" class="bg-purple-600 p-8 rounded-3xl text-3xl font-bold flex items-center shadow-xl transition-all duration-300"><span class="text-5xl mr-6 drop-shadow-md">✦</span><span class="text drop-shadow-md"></span></div>
+            <div id="ans2" class="bg-pink-500 p-8 rounded-3xl text-3xl font-bold flex items-center shadow-xl transition-all duration-300"><span class="text-5xl mr-6 drop-shadow-md">⬢</span><span class="text drop-shadow-md"></span></div>
+            <div id="ans3" class="bg-cyan-500 p-8 rounded-3xl text-3xl font-bold flex items-center shadow-xl transition-all duration-300"><span class="text-5xl mr-6 drop-shadow-md">⬤</span><span class="text drop-shadow-md"></span></div>
+            <div id="ans4" class="bg-orange-500 p-8 rounded-3xl text-3xl font-bold flex items-center shadow-xl transition-all duration-300"><span class="text-5xl mr-6 drop-shadow-md">■</span><span class="text drop-shadow-md"></span></div>
         </div>
 
         <div id="timer-circle" class="hidden text-8xl font-black bg-white text-indigo-900 w-40 h-40 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(255,255,255,0.3)] border-[10px] border-indigo-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 transition-colors duration-300">
@@ -64,13 +85,15 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             <h3 id="leaderboard-title" class="text-5xl font-black text-center mb-8 uppercase text-yellow-400 tracking-widest relative z-30"></h3>
             <div id="players-list" class="w-full h-full flex items-end justify-center mt-10 relative"></div>
         </div>
-
     </div>
 
     <script>
+        // SONS DU JEU ET DU TCHAT
         const sndTick = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
         const sndTing = new Audio('https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3');
         const sndApplause = new Audio('https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3');
+        const sndGasp = new Audio('https://assets.mixkit.co/active_storage/sfx/270/270-preview.mp3'); // 😱
+        const sndBoing = new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'); // 🤡
 
         let currentStatus = '';
         let timerInterval;
@@ -79,20 +102,69 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
         let correctAns = 1;
         let podiumAnimated = false; 
 
-        // Fonction Helper pour générer les avatars avec Auras CSS
+        let isChatOpen = false;
+        let lastChatLen = 0;
+
+        function toggleChat() {
+            isChatOpen = !isChatOpen;
+            document.getElementById('chat-panel').classList.toggle('translate-x-full');
+        }
+
+        function showFloatingMessage(nick, text) {
+            const cont = document.getElementById('floating-chat-container');
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble bg-white/20 backdrop-blur-md p-3 rounded-2xl rounded-bl-none shadow-xl border border-white/30 text-white';
+            bubble.innerHTML = `<span class="font-black text-yellow-400 text-xs uppercase tracking-widest block mb-1">${nick}</span><p class="text-lg font-bold drop-shadow-md break-words">${text}</p>`;
+            
+            // Ajoute en haut de la pile inversée
+            cont.prepend(bubble);
+            
+            // Auto destruction après 5s
+            setTimeout(() => { bubble.remove(); }, 5000);
+        }
+
+        function renderChat(chatList) {
+            if(!chatList || chatList.length === 0) return;
+            
+            if(chatList.length > lastChatLen) {
+                // Il y a de nouveaux messages !
+                for(let i = lastChatLen; i < chatList.length; i++) {
+                    let msg = chatList[i];
+                    
+                    // 🔊 Réactions Audio Emojis
+                    if(msg.msg.includes('👏')) { sndApplause.currentTime = 0; sndApplause.play().catch(()=>{}); }
+                    if(msg.msg.includes('😱')) { sndGasp.currentTime = 0; sndGasp.play().catch(()=>{}); }
+                    if(msg.msg.includes('🤡')) { sndBoing.currentTime = 0; sndBoing.play().catch(()=>{}); }
+
+                    // Afficher la bulle flottante sur l'écran
+                    showFloatingMessage(msg.nick, msg.msg);
+                }
+            }
+
+            const cont = document.getElementById('chat-messages');
+            const wasAtBottom = cont.scrollHeight - cont.scrollTop <= cont.clientHeight + 50;
+
+            cont.innerHTML = chatList.map(c => `
+                <div class="bg-white/10 p-3 rounded-xl rounded-tl-none w-11/12 border border-white/5">
+                    <span class="font-black text-indigo-300 text-xs uppercase tracking-widest">${c.nick}</span>
+                    <p class="text-white text-sm break-words">${c.msg}</p>
+                </div>
+            `).join('');
+
+            if(wasAtBottom) cont.scrollTop = cont.scrollHeight;
+            lastChatLen = chatList.length;
+        }
+
         function getAvatarHtml(p, sizeClasses, badgeSize) {
             let auraHtml = '';
             let floatClass = p.aura == 7 ? 'aura-float' : '';
-            
             if (p.aura > 0 && p.aura <= 5) {
                 let zAura = (p.aura == 1 || p.aura == 5) ? 30 : 5;
                 auraHtml = `<img src="personnage/aura/aura${p.aura}.png" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] object-contain animate-pulse" style="z-index: ${zAura};">`;
             } else if (p.aura == 6) {
                 auraHtml = `<div class="aura-rainbow"></div>`;
             }
-            
             let badge = p.is_member ? `<div class="absolute -bottom-1 -right-1 bg-yellow-400 text-black font-black flex items-center justify-center rounded-full border-2 border-white z-40 shadow-lg ${badgeSize}">★</div>` : '';
-            
             return `
             <div class="relative ${sizeClasses} bg-white bg-opacity-20 rounded-full border-2 border-indigo-300 flex items-end justify-center ${floatClass}">
                 ${auraHtml}
@@ -108,6 +180,8 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             fetch(`api_live.php?action=get_state&pin=<?= htmlspecialchars($pin) ?>`)
             .then(r => r.json())
             .then(data => {
+                if(data.chat) renderChat(data.chat);
+
                 if(currentStatus !== data.status) {
                     currentStatus = data.status;
                     if(data.status !== 'finished') podiumAnimated = false;
@@ -169,7 +243,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 document.getElementById('q-title').classList.remove('hidden');
                 
                 if (isLastQuestion) document.getElementById('x2-badge').classList.remove('hidden');
-
                 if (data.question.image_url && data.question.image_url.trim() !== '') {
                     document.getElementById('q-img').classList.remove('hidden');
                 }
@@ -186,13 +259,10 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 timerInterval = setInterval(() => {
                     timeLeft--;
                     timerEl.innerText = timeLeft;
-                    
                     if(timeLeft <= 5 && timeLeft > 0) {
                         timerEl.classList.add('text-red-500', 'border-red-500');
-                        sndTick.currentTime = 0;
-                        sndTick.play().catch(e => {});
+                        sndTick.currentTime = 0; sndTick.play().catch(e => {});
                     }
-                    
                     if(timeLeft <= 0) {
                         clearInterval(timerInterval);
                         fetch(`api_live.php?action=show_answer&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
@@ -201,7 +271,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             } 
             else if (data.status === 'show_answer') {
                 sndTing.play().catch(e => {});
-
                 document.getElementById('q-title').innerText = data.question.question_text;
                 document.getElementById('q-title').classList.remove('hidden');
                 if (data.question.image_url && data.question.image_url.trim() !== '') {
@@ -214,7 +283,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 for(let i=1; i<=4; i++) {
                     let ansDiv = document.getElementById(`ans${i}`);
                     ansDiv.querySelector('.text').innerText = data.question[`opt${i}`];
-                    
                     let votes = data.answer_counts ? (data.answer_counts[i] || 0) : 0;
                     
                     let voteBadge = ansDiv.querySelector('.vote-count');
@@ -234,13 +302,8 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 }
 
                 btnNext.classList.remove('hidden');
-                if(isLastQuestion) {
-                    btnNext.innerText = "🏆 VOIR LE PODIUM";
-                    btnNext.onclick = () => fetch(`api_live.php?action=show_leaderboard&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
-                } else {
-                    btnNext.innerText = "Voir le classement";
-                    btnNext.onclick = () => fetch(`api_live.php?action=show_leaderboard&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
-                }
+                btnNext.innerText = isLastQuestion ? "🏆 VOIR LE PODIUM" : "Voir le classement";
+                btnNext.onclick = () => fetch(`api_live.php?action=show_leaderboard&pin=<?= htmlspecialchars($pin) ?>`).then(sync);
             }
             else if (data.status === 'leaderboard') {
                 btnNext.classList.remove('hidden');
@@ -273,7 +336,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
 
         function renderLeaderboardTable(data) {
             let sortedPlayers = [...data.players].sort((a, b) => (data.scores[b.nickname] || 0) - (data.scores[a.nickname] || 0));
-            
             let html = `
             <div class="bg-white bg-opacity-10 backdrop-blur-md rounded-3xl p-2 border-2 border-indigo-400 shadow-2xl overflow-hidden w-full max-w-4xl">
                 <table class="w-full text-left border-collapse">
@@ -312,7 +374,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             let sortedPlayers = [...data.players].sort((a, b) => (data.scores[b.nickname] || 0) - (data.scores[a.nickname] || 0));
             let html = `<div class="relative w-full h-full flex flex-col items-center justify-end">`;
             
-            // Joueurs éliminés en arrière-plan
             html += `<div class="absolute top-10 md:top-24 w-full flex justify-center gap-6 md:gap-12 flex-wrap px-4 md:px-10 z-0 opacity-50 scale-75 blur-[1px]">`;
             for(let i = 3; i < sortedPlayers.length; i++) {
                 let p = sortedPlayers[i];
@@ -327,7 +388,6 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             }
             html += `</div>`;
 
-            // Podium Principal
             html += `<div class="flex items-end justify-center gap-4 md:gap-8 z-10 w-full max-w-4xl mx-auto h-[400px]">`;
 
             const getWinnerHtml = (p, id, place, medal, heightClass, bgClass, colorClass, borderClass) => {
@@ -335,10 +395,7 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
                 let avatar = getAvatarHtml(p, 'w-32 h-32 md:w-48 md:h-48', 'text-[14px] w-8 h-8');
                 let silhouetteClass = place === 1 ? 'silhouette' : ''; 
                 let neonClass = p.is_member ? 'neon-vip' : '';
-                
-                let scoreDisplay = (data.mode === 'survie') 
-                    ? ('❤️'.repeat(data.hearts[p.nickname] || 0)) 
-                    : (data.scores[p.nickname] || 0) + ' pts';
+                let scoreDisplay = (data.mode === 'survie') ? ('❤️'.repeat(data.hearts[p.nickname] || 0)) : (data.scores[p.nickname] || 0) + ' pts';
 
                 return `
                 <div id="${id}" class="opacity-0 flex flex-col items-center">
@@ -359,35 +416,18 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
 
             html += `</div>`;
             
-            // Statistiques
-            let statsHtml = `
-            <div class="absolute right-4 md:right-10 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 backdrop-blur-md p-6 rounded-3xl border-2 border-indigo-400 shadow-2xl opacity-0 animate-pop-in z-50 w-72 md:w-80" style="animation-delay: 17s;">
-                <h4 class="text-xl font-black text-yellow-400 mb-4 uppercase text-center border-b border-indigo-500 pb-3">Statistiques</h4>
-                <ul class="space-y-4">`;
-
+            let statsHtml = `<div class="absolute right-4 md:right-10 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 backdrop-blur-md p-6 rounded-3xl border-2 border-indigo-400 shadow-2xl opacity-0 animate-pop-in z-50 w-72 md:w-80" style="animation-delay: 17s;"><h4 class="text-xl font-black text-yellow-400 mb-4 uppercase text-center border-b border-indigo-500 pb-3">Statistiques</h4><ul class="space-y-4">`;
             sortedPlayers.slice(0, 5).forEach((p) => {
                 let count = (data.correct_counts && data.correct_counts[p.nickname]) || 0;
-                let s = count > 1 ? 's' : '';
                 let neonClass = p.is_member ? 'neon-vip' : '';
-                statsHtml += `
-                    <li class="flex justify-between items-center text-md md:text-lg">
-                        <span class="font-bold text-white truncate max-w-[120px] uppercase tracking-wider ${neonClass}">${p.nickname}</span>
-                        <span class="bg-green-500 text-white px-3 py-1 rounded-xl font-black text-xs md:text-sm shadow-md">${count} juste${s}</span>
-                    </li>`;
+                statsHtml += `<li class="flex justify-between items-center text-md md:text-lg"><span class="font-bold text-white truncate max-w-[120px] uppercase tracking-wider ${neonClass}">${p.nickname}</span><span class="bg-green-500 text-white px-3 py-1 rounded-xl font-black text-xs md:text-sm shadow-md">${count} juste${count>1?'s':''}</span></li>`;
             });
-            statsHtml += `</ul></div>`;
-            html += statsHtml;
+            html += statsHtml + `</ul></div>`;
 
-            // Awards
             let eclair = '', tortue = '', miracule = '';
             let minTime = 9999, maxTime = 0, maxWrong = 0;
-            
             data.players.forEach(p => {
-                let n = p.nickname;
-                let time = data.response_times ? (data.response_times[n] || 0) : 0;
-                let c = data.correct_counts ? (data.correct_counts[n] || 0) : 0;
-                let w = data.wrong_counts ? (data.wrong_counts[n] || 0) : 0;
-                
+                let n = p.nickname, time = data.response_times ? (data.response_times[n] || 0) : 0, c = data.correct_counts ? (data.correct_counts[n] || 0) : 0, w = data.wrong_counts ? (data.wrong_counts[n] || 0) : 0;
                 if (c > 0 && time > 0 && time < minTime) { minTime = time; eclair = n; }
                 if (time > maxTime) { maxTime = time; tortue = n; }
                 if (w > maxWrong && (!data.eliminated || !data.eliminated.includes(n))) { maxWrong = w; miracule = n; }
@@ -397,44 +437,22 @@ if (!$pin) { header("Location: dashboard.php"); exit; }
             if (eclair) awardsHtml += `<div class="bg-blue-600 border-2 border-blue-300 text-white px-6 py-2 rounded-2xl shadow-lg text-center"><p class="text-[10px] uppercase font-bold text-blue-200">⚡ L'éclair</p><p class="font-black text-xl">${eclair}</p></div>`;
             if (tortue) awardsHtml += `<div class="bg-green-700 border-2 border-green-400 text-white px-6 py-2 rounded-2xl shadow-lg text-center"><p class="text-[10px] uppercase font-bold text-green-300">🐌 La Tortue</p><p class="font-black text-xl">${tortue}</p></div>`;
             if (miracule) awardsHtml += `<div class="bg-purple-600 border-2 border-purple-300 text-white px-6 py-2 rounded-2xl shadow-lg text-center"><p class="text-[10px] uppercase font-bold text-purple-200">🍀 Le Miraculé</p><p class="font-black text-xl">${miracule}</p></div>`;
-            awardsHtml += `</div>`;
-            
-            html += awardsHtml + `</div>`;
+            html += awardsHtml + `</div></div>`;
 
             document.getElementById('players-list').innerHTML = html;
 
-            setTimeout(() => { 
-                let p3 = document.getElementById('podium-3'); 
-                if(p3) { p3.classList.remove('opacity-0'); p3.classList.add('animate-pop-in'); }
-            }, 4000);
-            
-            setTimeout(() => { 
-                let p2 = document.getElementById('podium-2'); 
-                if(p2) { p2.classList.remove('opacity-0'); p2.classList.add('animate-pop-in'); }
-            }, 8000);
-            
-            setTimeout(() => { 
-                let p1 = document.getElementById('podium-1'); 
-                if(p1) { p1.classList.remove('opacity-0'); p1.classList.add('animate-pop-in'); }
-            }, 12000);
-            
+            setTimeout(() => { let p3 = document.getElementById('podium-3'); if(p3) { p3.classList.remove('opacity-0'); p3.classList.add('animate-pop-in'); } }, 4000);
+            setTimeout(() => { let p2 = document.getElementById('podium-2'); if(p2) { p2.classList.remove('opacity-0'); p2.classList.add('animate-pop-in'); } }, 8000);
+            setTimeout(() => { let p1 = document.getElementById('podium-1'); if(p1) { p1.classList.remove('opacity-0'); p1.classList.add('animate-pop-in'); } }, 12000);
             setTimeout(() => { 
                 let winner = document.getElementById('winner-block'); 
-                if(winner) { 
-                    winner.classList.remove('silhouette'); 
-                    winner.classList.add('revealed'); 
-                    sndApplause.play().catch(e => {});
-                    fireConfetti();
-                }
+                if(winner) { winner.classList.remove('silhouette'); winner.classList.add('revealed'); sndApplause.play().catch(e => {}); fireConfetti(); }
             }, 16000);
         }
 
         function fireConfetti() {
-          const duration = 15 * 1000;
-          const animationEnd = Date.now() + duration;
-          const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+          const duration = 15 * 1000, animationEnd = Date.now() + duration, defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
           function randomInRange(min, max) { return Math.random() * (max - min) + min; }
-
           const interval = setInterval(function() {
             const timeLeft = animationEnd - Date.now();
             if (timeLeft <= 0) return clearInterval(interval);
