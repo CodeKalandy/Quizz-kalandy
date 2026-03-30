@@ -19,7 +19,7 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             margin: 0 auto 20px; 
             background: #f3f4f6; 
             border-radius: 20px; 
-            overflow: visible; /* Visible pour que l'aura puisse déborder ! */
+            overflow: visible; 
             border: 4px solid #facc15; 
         }
         .layer { 
@@ -317,9 +317,9 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             eyebrow: { type: 0, colorIdx: 0, maxType: 17, hasColor: true, colors: commonColors, path: "Eyebrow" },
             spot: { type: 0, colorIdx: 0, maxType: 13, hasColor: false, path: "Spot" },
             
-            hair: { type: 1, colorIdx: 0, maxType: 17, hasColor: true, colors: commonColors, styleIdx: 1 }, 
+            hair: { type: 1, colorIdx: 0, maxType: 15, hasColor: true, colors: commonColors, styleIdx: 0 }, 
             beard: { type: 0, colorIdx: 0, maxType: 11, hasColor: true, colors: commonColors, path: "Beards" },
-            mustache: { type: 0, colorIdx: 0, maxType: 9, hasColor: true, colors: commonColors, path: "Mustaches" },
+            mustache: { type: 0, colorIdx: 0, maxType: 11, hasColor: true, colors: commonColors, path: "Mustaches" },
             
             top: { type: 1, colorIdx: 0, maxType: 20, hasColor: true, colors: clothesColors, path: "Top/Men" },
             jacket: { type: 0, colorIdx: 0, maxType: 19, hasColor: true, colors: clothesColors, path: "Jacket/Men" }, 
@@ -342,7 +342,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             const lblColor = document.getElementById(`lbl-${category}-color`);
             const lblStyle = document.getElementById(`lbl-${category}-style`);
             
-            // Masquer les images si = 0
             if (data.type === 0) {
                 if (category === 'hair') {
                     document.getElementById('layer-hair-front').src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
@@ -358,24 +357,34 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             if(lblColor) lblColor.innerText = data.colorIdx + 1;
             if(lblStyle) lblStyle.innerText = hairStyles[data.styleIdx].replace('_', ' ');
 
-            // CAS SPÉCIAUX (Cheveux, Auras, Effets)
             if (category === 'hair') {
                 let colorCode = data.colors[data.colorIdx];
                 let style = hairStyles[data.styleIdx];
-                document.getElementById('layer-hair-front').src = `${basePath}Hair/Front/${style}/${data.type}/${colorCode}.png`;
-                document.getElementById('layer-hair-back').src = `${basePath}Hair/Back/${style}/${colorCode}.png`;
+                
+                let elFront = document.getElementById('layer-hair-front');
+                let elBack = document.getElementById('layer-hair-back');
+                
+                elFront.src = `${basePath}Hair/Front/${style}/${data.type}/${colorCode}.png`;
+                elBack.src = `${basePath}Hair/Back/${style}/${data.type}/${colorCode}.png`;
+                
+                // Fallback de sécurité si un numéro est sauté dans les fichiers
+                elFront.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
+                elBack.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
                 return;
             }
             if (category === 'aura') {
-                document.getElementById(`layer-aura`).src = `personnage/aura/aura${data.type}.png`;
+                let elAura = document.getElementById(`layer-aura`);
+                elAura.src = `personnage/aura/aura${data.type}.png`;
+                elAura.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
                 return;
             }
             if (category === 'effect') {
-                document.getElementById(`layer-effect`).src = `personnage/effets/effet${data.type}.png`;
+                let elEffect = document.getElementById(`layer-effect`);
+                elEffect.src = `personnage/effets/effet${data.type}.png`;
+                elEffect.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
                 return;
             }
 
-            // CAS CLASSIQUES
             const el = document.getElementById(`layer-${category}`);
             let finalUrl = `${basePath}${data.path}`;
             if (data.hasColor) {
@@ -390,6 +399,11 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             }
 
             el.src = finalUrl;
+            
+            // Fallback de sécurité (très utile pour Antiquité par exemple)
+            el.onerror = function() {
+                this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; 
+            };
         }
 
         function changeLayer(category, prop, direction) {
@@ -397,7 +411,7 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             
             if (prop === 'type') {
                 data.type += direction;
-                let min = ['skin', 'eyes', 'mouth', 'nose'].includes(category) ? 1 : 0;
+                let min = ['skin', 'eyes', 'mouth', 'nose', 'top'].includes(category) ? 1 : 0;
                 if (data.type > data.maxType) data.type = min;
                 if (data.type < min) data.type = data.maxType;
             } 
@@ -425,7 +439,6 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             const nick = document.getElementById('nick').value.trim();
             if(!nick) return alert("Il nous faut ton pseudo !");
 
-            // On rassemble TOUTES les informations du joueur
             const payload = {
                 nickname: nick,
                 skin: state.skin.type, skinColor: state.skin.colorIdx,
