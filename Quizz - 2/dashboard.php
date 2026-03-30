@@ -66,7 +66,18 @@ $quizzes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         <?php endif; ?>
 
-        <h2 class="text-3xl font-black text-white uppercase tracking-widest mb-8 border-b border-indigo-500/50 pb-4">🎮 Lancer une partie</h2>
+        <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl shadow-2xl border border-white/20 mb-10 max-w-xl mx-auto">
+            <h2 class="text-xl font-black text-white uppercase tracking-widest mb-4 text-center">🎮 Rejoindre une partie</h2>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="pin-code" placeholder="CODE PIN (6 CHIFFRES)" maxlength="6" 
+                       class="flex-grow p-4 text-center text-2xl font-black text-indigo-900 bg-white rounded-2xl outline-none focus:ring-4 focus:ring-yellow-400 tracking-[0.2em] shadow-inner">
+                <button onclick="joinWithPin()" class="bg-yellow-400 hover:bg-yellow-300 text-indigo-900 font-black px-8 py-4 rounded-2xl transition shadow-[0_4px_0_0_#ca8a04] active:shadow-none active:translate-y-1 uppercase tracking-widest">
+                    GO !
+                </button>
+            </div>
+        </div>
+
+        <h2 class="text-3xl font-black text-white uppercase tracking-widest mb-6 border-b border-indigo-500/50 pb-4">🎮 Héberger une partie</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <?php foreach ($quizzes as $q): ?>
@@ -81,11 +92,21 @@ $quizzes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             <?php if (empty($quizzes)): ?>
                 <div class="col-span-full bg-indigo-900/50 border border-indigo-500/30 rounded-3xl p-10 text-center">
-                    <p class="text-indigo-300 italic text-lg font-bold">Aucun quiz n'a encore été créé. La salle d'attente est vide !</p>
+                    <p class="text-indigo-300 italic text-lg font-bold">Aucun quiz n'a encore été créé. L'espace de jeu est vide !</p>
                 </div>
             <?php endif; ?>
         </div>
-
     </div>
+
+    <script>
+        function joinWithPin() {
+            const pin = document.getElementById('pin-code').value.trim();
+            if (pin.length === 6) {
+                window.location.href = "lobby?pin=" + pin;
+            } else {
+                alert("Veuillez entrer un code PIN valide à 6 chiffres.");
+            }
+        }
+    </script>
 </body>
 </html>

@@ -9,105 +9,101 @@
     <title>Bernard Quizz - Accueil</title>
     <style>
         @keyframes float { 
-            0%, 100% { transform: translateY(0) rotate(0deg); } 
-            50% { transform: translateY(-20px) rotate(5deg); } 
+            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); } 
+            50% { transform: translateY(-20px) rotate(5deg) scale(1.05); } 
+        }
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 0.1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.5); }
         }
         .animate-float { animation: float 6s ease-in-out infinite; }
         .animate-float-delayed { animation: float 7s ease-in-out infinite; animation-delay: 2s; }
         .animate-float-fast { animation: float 4s ease-in-out infinite; animation-delay: 1s; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(80px); z-index: 0; animation: pulse-slow 8s infinite alternate; }
     </style>
 </head>
-<body class="bg-indigo-900 flex flex-col items-center justify-center min-h-screen text-white font-sans relative overflow-hidden">
+<body class="bg-indigo-900 flex flex-col items-center justify-between min-h-screen text-white font-sans relative overflow-x-hidden">
 
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="orb bg-yellow-500 w-96 h-96 top-[-10%] left-[-10%] opacity-20"></div>
+        <div class="orb bg-pink-600 w-[30rem] h-[30rem] bottom-[-10%] right-[-10%] opacity-20" style="animation-delay: 3s;"></div>
+        <div class="orb bg-cyan-500 w-64 h-64 top-[40%] left-[60%] opacity-10" style="animation-delay: 1s;"></div>
+
         <div class="absolute top-10 left-10 text-8xl text-white/5 font-black animate-pulse">?</div>
-        <div class="absolute bottom-20 right-20 text-9xl text-white/5 font-black animate-float">!</div>
-        <div class="absolute top-1/4 right-1/4 text-7xl text-purple-500/20 font-black animate-float-fast">✦</div>
-        <div class="absolute bottom-1/3 left-1/4 text-8xl text-pink-500/10 font-black animate-float-delayed">⬢</div>
-        <div class="absolute top-20 right-10 text-6xl text-cyan-500/20 font-black animate-pulse">⬤</div>
-        <div class="absolute bottom-10 left-1/3 text-7xl text-orange-500/20 font-black animate-float">■</div>
-
-        <div class="absolute top-16 left-4 md:left-24 opacity-90 animate-bounce" style="animation-duration: 4s;">
-            <div class="bg-white text-indigo-900 px-4 py-2 rounded-2xl rounded-bl-none font-black text-sm shadow-xl mb-2 max-w-[160px] border-2 border-indigo-200">
-                Quelle est la capitale de l'Australie ? 🤔
-            </div>
-            <div class="relative w-20 h-20">
-                <img src="personnage/tenue/tenue2.png" class="absolute bottom-0 w-full h-full object-contain z-10" onerror="this.style.display='none'">
-                <img src="personnage/cheveux/cheveux4.png" class="absolute bottom-0 w-full h-full object-contain z-20" onerror="this.style.display='none'">
-            </div>
-        </div>
-
-        <div class="absolute bottom-32 right-4 md:right-24 opacity-90 animate-bounce" style="animation-duration: 5s; animation-delay: 1s;">
-            <div class="bg-yellow-400 text-yellow-900 px-4 py-2 rounded-2xl rounded-br-none font-black text-sm shadow-xl mb-2 max-w-[160px] ml-auto text-right border-2 border-yellow-500">
-                C'est Canberra ! Évidemment ! 💡
-            </div>
-            <div class="relative w-24 h-24 ml-auto">
-                <img src="personnage/tenue/tenue5.png" class="absolute bottom-0 w-full h-full object-contain z-10" onerror="this.style.display='none'">
-                <img src="personnage/cheveux/cheveux7.png" class="absolute bottom-0 w-full h-full object-contain z-20" onerror="this.style.display='none'">
-            </div>
-        </div>
-
-        <div class="absolute top-1/2 left-2 md:left-12 opacity-80 animate-float-fast">
-            <div class="bg-purple-600 text-white px-3 py-2 rounded-2xl rounded-bl-none font-bold text-xs shadow-lg mb-1 max-w-[120px] border border-purple-400">
-                Il me faut le Joker 50/50... 🃏
+        <div class="absolute bottom-32 right-20 text-9xl text-white/5 font-black animate-float">!</div>
+        <div class="absolute top-1/4 right-1/4 text-7xl text-yellow-400/20 font-black animate-float-fast">✦</div>
+        <div class="absolute bottom-1/3 left-1/4 text-8xl text-pink-500/20 font-black animate-float-delayed">⬢</div>
+        
+        <div class="absolute top-16 left-4 md:left-24 opacity-90 animate-float" style="animation-duration: 5s;">
+            <div class="bg-white text-indigo-900 px-4 py-2 rounded-2xl rounded-bl-none font-black text-xs shadow-xl mb-2 max-w-[140px] border-2 border-indigo-200">
+                Prêt pour le Quizz ? 😎
             </div>
             <div class="relative w-16 h-16">
-                <img src="personnage/tenue/tenue8.png" class="absolute bottom-0 w-full h-full object-contain z-10" onerror="this.style.display='none'">
-                <img src="personnage/cheveux/cheveux10.png" class="absolute bottom-0 w-full h-full object-contain z-20" onerror="this.style.display='none'">
+                <img src="https://codekalandy.github.io/Quizz-kalandy/Quizz%20-%202/personnage/images/sections/Skin/1/1.png" class="absolute bottom-0 w-full h-full object-contain z-10">
+                <img src="https://codekalandy.github.io/Quizz-kalandy/Quizz%20-%202/personnage/images/sections/Hair/Front/short/1/11.png" class="absolute bottom-0 w-full h-full object-contain z-20">
+            </div>
+        </div>
+
+        <div class="absolute bottom-40 right-4 md:right-24 opacity-90 animate-float-fast">
+            <div class="bg-yellow-400 text-yellow-900 px-4 py-2 rounded-2xl rounded-br-none font-black text-xs shadow-xl mb-2 max-w-[140px] ml-auto text-right border-2 border-yellow-500">
+                J'ai pas révisé... 😱
+            </div>
+            <div class="relative w-20 h-20 ml-auto">
+                <img src="https://codekalandy.github.io/Quizz-kalandy/Quizz%20-%202/personnage/images/sections/Skin/1/4.png" class="absolute bottom-0 w-full h-full object-contain z-10">
+                <img src="https://codekalandy.github.io/Quizz-kalandy/Quizz%20-%202/personnage/images/sections/Hair/Front/short/4/19.png" class="absolute bottom-0 w-full h-full object-contain z-20">
             </div>
         </div>
     </div>
 
-    <div class="max-w-md w-full p-6 bg-white rounded-3xl shadow-2xl text-gray-900 relative z-10 mt-10 mx-4">
-        
-        <img src="images/logo.png" alt="Logo Bernard Quizz" class="w-32 h-32 mx-auto mb-2 object-contain drop-shadow-xl hover:scale-110 transition-transform">
-        <h1 class="text-4xl font-black text-center text-indigo-700 mb-8 italic tracking-tighter">BERNARD QUIZZ</h1>
-        
-        <div class="mb-6">
-            <input type="text" id="pin" placeholder="Code PIN à 6 chiffres" 
-                   class="w-full p-4 border-4 border-gray-100 rounded-2xl text-center text-2xl font-black tracking-widest focus:border-indigo-500 outline-none transition-colors">
-            <button onclick="joinGame()" class="w-full mt-4 bg-indigo-600 text-white p-4 rounded-2xl font-black text-xl hover:bg-indigo-700 transition shadow-lg active:scale-95">
-                REJOINDRE LA PARTIE
-            </button>
-        </div>
+    <div class="flex-grow flex flex-col items-center justify-center w-full z-10 px-4 pt-10">
+        <div class="max-w-md w-full p-8 bg-white/10 backdrop-blur-lg rounded-[2rem] shadow-2xl border border-white/20 text-center relative">
+            
+            <img src="images/logo.png" alt="Logo Bernard Quizz" class="w-32 h-32 mx-auto mb-2 object-contain drop-shadow-2xl hover:scale-110 transition-transform duration-300">
+            <h1 class="text-5xl font-black text-yellow-400 mb-8 tracking-tighter" style="font-family: 'Caveat', cursive; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">BERNARD QUIZZ</h1>
+            
+            <div class="mb-8 relative group">
+                <input type="text" id="pin" placeholder="CODE PIN (6 CHIFFRES)" maxlength="6" 
+                       class="w-full p-5 bg-white text-indigo-900 border-none rounded-2xl text-center text-2xl font-black tracking-[0.2em] focus:ring-4 focus:ring-yellow-400 outline-none transition-all shadow-inner">
+                <button onclick="joinGame()" class="w-full mt-4 bg-yellow-400 text-indigo-900 p-5 rounded-2xl font-black text-xl hover:bg-yellow-300 transition shadow-[0_6px_0_0_#ca8a04] active:shadow-none active:translate-y-1.5 uppercase tracking-widest">
+                    Rejoindre
+                </button>
+            </div>
 
-        <div class="flex flex-col gap-3 pt-6 border-t-2 border-gray-100">
-            <a href="login" class="text-center p-3 bg-gray-100 text-gray-700 rounded-xl font-black hover:bg-gray-200 transition">
-                Se connecter
-            </a>
-            <a href="register" class="text-center text-indigo-500 font-bold text-sm hover:underline">
-                Créer un compte VIP (Gratuit)
-            </a>
-        </div>
-        
-        <div class="mt-8 p-6 bg-yellow-300 text-yellow-900 rounded-2xl transform rotate-2 shadow-xl border-4 border-yellow-400" style="font-family: 'Caveat', cursive; font-size: 1.4rem; line-height: 1.2;">
-            ✨ Psst... Crée un compte pour devenir VIP !<br>
-            Tu auras accès à :<br>
-            - La sauvegarde de ton Bernard favori 👕<br>
-            - Les Auras <br>
-            - Un Joker 50/50 exclusif 🃏<br>
-            - Toutes tes stats & titres sauvegardés 📈 !
+            <div class="flex flex-col gap-3 pt-6 border-t border-white/20">
+                <a href="login" class="w-full p-4 bg-indigo-600/50 hover:bg-indigo-500/80 text-white rounded-xl font-black transition border border-indigo-400/50 uppercase tracking-wider text-sm shadow-md">
+                    Se connecter
+                </a>
+                <a href="register" class="w-full p-4 bg-transparent border-2 border-white/30 hover:bg-white/10 text-white rounded-xl font-bold transition text-sm">
+                    Créer un compte Gratuit
+                </a>
+            </div>
+            
         </div>
     </div>
 
-    <div class="absolute bottom-4 flex flex-col items-center gap-2 text-xs font-bold text-indigo-300 opacity-80 z-10 w-full px-4 text-center">
-        <div class="flex gap-6">
-            <a href="documentation" class="hover:text-white transition drop-shadow-md">📖 Documentation</a>
-            <a href="mentions_legales" class="hover:text-white transition drop-shadow-md">⚖️ Mentions Légales</a>
+    <div class="w-full bg-indigo-950/80 border-t border-indigo-500/30 py-6 px-4 z-10 mt-10 backdrop-blur-md">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <div class="flex gap-6 text-sm font-bold text-indigo-300">
+                <a href="documentation" class="hover:text-yellow-400 transition flex items-center gap-2"><span>📖</span> Documentation</a>
+                <a href="mentions_legales" class="hover:text-yellow-400 transition flex items-center gap-2"><span>⚖️</span> Mentions Légales</a>
+            </div>
+
+            <div class="text-xs text-indigo-400/80 font-medium text-center md:text-right">
+                <p>Création des personnages basée sur le projet open-source <a href="https://pinknose.me" target="_blank" class="text-yellow-500/80 hover:text-yellow-400 hover:underline">pinknose.me</a></p>
+                <p class="mt-1 opacity-50">&copy; <?= date('Y') ?> Bernard Quizz. Tous droits réservés.</p>
+            </div>
+            
         </div>
-        <p class="mt-2 opacity-80 drop-shadow-md bg-indigo-900/50 px-4 py-1 rounded-full">
-            Les modèles de création de personnages sont basés sur le superbe projet open-source de <a href="https://pinknose.me" target="_blank" class="text-yellow-400 hover:underline">pinknose.me</a>.
-        </p>
     </div>
 
     <script>
         function joinGame() {
-            const pin = document.getElementById('pin').value;
+            const pin = document.getElementById('pin').value.trim();
             if(pin.length === 6) {
-                // Lien propre sans .php
                 window.location.href = "lobby?pin=" + pin;
             } else {
-                alert("Veuillez entrer un code à 6 chiffres.");
+                alert("Veuillez entrer un code PIN à 6 chiffres.");
             }
         }
     </script>
