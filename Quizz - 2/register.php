@@ -114,14 +114,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="float-bubble border-pink-500 text-pink-200" style="--bubble-bg: #831843; background-color: var(--bubble-bg);">
             Rejoins-nous ! 🎉
         </div>
-        <img src="images/avatar1.png" class="float-avatar" alt="Avatar">
+        <img src="images/avatar4.png" class="float-avatar" alt="Avatar">
     </div>
 
     <div class="absolute bottom-32 right-4 md:right-24 floating-delayed-1 z-0 avatar-container hidden md:flex" style="--rot: 10deg;">
         <div class="float-bubble border-yellow-500 text-yellow-200" style="--bubble-bg: #422006; background-color: var(--bubble-bg);">
             C'est rapide ! ⏱️
         </div>
-        <img src="images/avatar3.png" class="float-avatar" alt="Avatar">
+        <img src="images/avatar5.png" class="float-avatar" alt="Avatar">
     </div>
 
     <div class="absolute top-4 left-4 z-20">

@@ -130,14 +130,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="float-bubble border-blue-500 text-blue-200" style="--bubble-bg: #1e3a8a; background-color: var(--bubble-bg);">
             Content de te revoir ! 👋
         </div>
-        <img src="images/avatar1.png" class="float-avatar" alt="Avatar">
+        <img src="images/avatar5.png" class="float-avatar" alt="Avatar">
     </div>
 
     <div class="absolute bottom-32 right-4 md:right-24 floating-delayed-1 z-0 avatar-container hidden md:flex" style="--rot: 10deg;">
         <div class="float-bubble border-pink-500 text-pink-200" style="--bubble-bg: #831843; background-color: var(--bubble-bg);">
             Connecte-toi vite ! 🚀
         </div>
-        <img src="images/avatar2.png" class="float-avatar" alt="Avatar">
+        <img src="images/avatar6.png" class="float-avatar" alt="Avatar">
     </div>
 
     <div class="absolute top-4 left-4 z-20">
