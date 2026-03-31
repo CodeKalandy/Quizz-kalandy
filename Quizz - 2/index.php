@@ -160,7 +160,7 @@ $is_logged_in = isset($_SESSION['user_id']);
             
             <h2 class="title-text text-3xl md:text-4xl text-white mb-6 uppercase">Rejoins une partie !</h2>
             
-            <form action="lobby.php" method="GET" class="w-full space-y-6">
+            <form action="lobby" method="GET" class="w-full space-y-6">
                 <div>
                     <input type="text" name="pin" id="pin" maxlength="6" placeholder="CODE PIN" required autocomplete="off"
                            class="w-full p-4 bg-[#0f172a] border-4 border-[#312e81] rounded-2xl font-black text-center text-white text-3xl focus:border-yellow-400 focus:ring-0 outline-none transition-all shadow-[inset_0_4px_10px_rgba(0,0,0,0.5)] placeholder-gray-500 tracking-[0.5em] uppercase">
@@ -179,15 +179,15 @@ $is_logged_in = isset($_SESSION['user_id']);
 
             <div class="w-full">
                 <?php if ($is_logged_in): ?>
-                    <a href="dashboard.php" class="secondary-btn w-full !bg-purple-600 !border-purple-800 !shadow-[0_5px_0_0_#581c87] hover:!bg-purple-500 py-4 text-lg">
+                    <a href="dashboard" class="secondary-btn w-full !bg-purple-600 !border-purple-800 !shadow-[0_5px_0_0_#581c87] hover:!bg-purple-500 py-4 text-lg">
                         Mon Espace Animateur
                     </a>
                 <?php else: ?>
                     <div class="flex gap-3 w-full">
-                        <a href="login.php" class="secondary-btn flex-1 !text-xs md:!text-sm !py-3">
+                        <a href="login" class="secondary-btn flex-1 !text-xs md:!text-sm !py-3">
                             Connexion
                         </a>
-                        <a href="register.php" class="secondary-btn flex-1 !text-xs md:!text-sm !py-3 !bg-pink-600 !border-pink-800 !shadow-[0_5px_0_0_#831843] hover:!bg-pink-500">
+                        <a href="register" class="secondary-btn flex-1 !text-xs md:!text-sm !py-3 !bg-pink-600 !border-pink-800 !shadow-[0_5px_0_0_#831843] hover:!bg-pink-500">
                             S'inscrire
                         </a>
                     </div>
@@ -198,8 +198,8 @@ $is_logged_in = isset($_SESSION['user_id']);
 
     <div class="absolute bottom-2 w-full text-center text-[10px] md:text-xs font-bold tracking-widest uppercase text-indigo-300/50 z-20 pointer-events-auto px-4">
         <div class="flex justify-center gap-4 md:gap-8 mb-1">
-            <a href="documentation.php" class="hover:text-yellow-400 transition-colors">Documentation</a>
-            <a href="mentions_legales.php" class="hover:text-yellow-400 transition-colors">Mentions Légales & CGU</a>
+            <a href="documentation" class="hover:text-yellow-400 transition-colors">Documentation</a>
+            <a href="mentions_legales" class="hover:text-yellow-400 transition-colors">Mentions Légales & CGU</a>
         </div>
         <p class="leading-tight">
             Création des personnages basée sur le projet open-source pinknose.me<br>

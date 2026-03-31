@@ -125,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <div class="absolute top-4 left-4 z-20">
-        <a href="index.php" class="bg-[#1e1b4b] border-2 border-[#312e81] text-indigo-300 px-4 py-2 rounded-xl font-black text-sm uppercase tracking-wider shadow-[0_4px_0_0_#0b0f19] hover:text-white transition-all active:translate-y-1 active:shadow-none inline-block">
+        <a href="index" class="bg-[#1e1b4b] border-2 border-[#312e81] text-indigo-300 px-4 py-2 rounded-xl font-black text-sm uppercase tracking-wider shadow-[0_4px_0_0_#0b0f19] hover:text-white transition-all active:translate-y-1 active:shadow-none inline-block">
             ◀ Retour
         </a>
     </div>
@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
-            <form action="register.php" method="POST" class="w-full space-y-4">
+            <form action="register" method="POST" class="w-full space-y-4">
                 <div>
                     <input type="text" name="username" placeholder="TON PSEUDO" required autocomplete="username" class="input-game">
                 </div>
@@ -173,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="w-full">
-                <a href="login.php" class="secondary-btn">
+                <a href="login" class="secondary-btn">
                     Se connecter
                 </a>
             </div>
@@ -182,8 +182,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="mt-auto pt-8 pb-2 w-full text-center text-[10px] md:text-xs font-bold tracking-widest uppercase text-indigo-300/50 z-20 pointer-events-auto px-4 relative">
         <div class="flex justify-center gap-4 md:gap-8 mb-1">
-            <a href="documentation.php" class="hover:text-yellow-400 transition-colors">Documentation</a>
-            <a href="mentions_legales.php" class="hover:text-yellow-400 transition-colors">Mentions Légales & CGU</a>
+            <a href="documentation" class="hover:text-yellow-400 transition-colors">Documentation</a>
+            <a href="mentions_legales" class="hover:text-yellow-400 transition-colors">Mentions Légales & CGU</a>
         </div>
         <p class="leading-tight">
             Création des personnages basée sur le projet open-source pinknose.me<br>
