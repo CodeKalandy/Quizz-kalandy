@@ -15,8 +15,12 @@ $stmtRole = $pdo->prepare("SELECT role FROM users WHERE id = ?");
 $stmtRole->execute([$user_id]);
 $user_role = $stmtRole->fetchColumn();
 
-// Autorisation de création
+// Stocker le role en session si absent (compatibilité)
+if (!isset($_SESSION['role'])) { $_SESSION['role'] = $user_role; }
+
+// Autorisations
 $can_create_quiz = in_array($user_role, ['createur', 'admin', 'fondateur']);
+$can_admin       = in_array($user_role, ['admin', 'fondateur']);
 
 // Récupérer le nombre de quizz de ce user
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM quizzes WHERE user_id = ?");
@@ -29,7 +33,6 @@ $quiz_count = $stmt->fetchColumn();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" type="image/png" href="images/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
     <title>Bernard Quizz - Mon Espace</title>
     <style>
@@ -72,6 +75,9 @@ $quiz_count = $stmt->fetchColumn();
 
         .btn-purple { background-color: #9333ea; border: 4px solid #6b21a8; box-shadow: 0 8px 0 0 #581c87; color: white; }
         .btn-purple:hover { background-color: #a855f7; }
+
+        .btn-red { background-color: #dc2626; border: 4px solid #991b1b; box-shadow: 0 8px 0 0 #7f1d1d; color: white; }
+        .btn-red:hover { background-color: #ef4444; }
 
         .particle { position: fixed; background: rgba(255,255,255,0.02); border-radius: 50%; animation: drift infinite linear; pointer-events: none; z-index: 0; }
         @keyframes drift { from { transform: translateY(100vh) rotate(0deg); } to { transform: translateY(-100vh) rotate(360deg); } }
@@ -129,16 +135,12 @@ $quiz_count = $stmt->fetchColumn();
 
         <!-- Boutons créateurs / admin (si applicable) -->
         <?php if ($can_create_quiz): ?>
-        <div class="w-full grid grid-cols-1 md:grid-cols-<?= $can_create_quiz ? '3' : '2' ?> gap-6 mb-12 max-w-4xl mx-auto">
+        <div class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-<?= $can_admin ? '4' : '3' ?> gap-6 mb-12 max-w-4xl mx-auto">
 
-            <a href="host_game" class="dash-btn btn-green" style="min-height:140px;">
-                <span class="text-3xl mb-2">🚀</span>
-                <span class="text-base">Lancer<br>une partie</span>
-            </a>
 
             <a href="manage_quizzes" class="dash-btn btn-blue" style="min-height:140px;">
                 <span class="text-3xl mb-2">📂</span>
-                <span class="text-base">Gérer<br>mes Quizz</span>
+                <span class="text-base">Gérer<br>Les Quizz</span>
                 <span class="mt-2 text-xs bg-blue-900/50 px-3 py-1 rounded-full border border-blue-400"><?= $quiz_count ?> créés</span>
             </a>
 
@@ -147,12 +149,19 @@ $quiz_count = $stmt->fetchColumn();
                 <span class="text-base">Créer<br>un Quizz</span>
             </a>
 
+            <?php if ($can_admin): ?>
+            <a href="admin_users" class="dash-btn btn-red" style="min-height:140px;">
+                <span class="text-3xl mb-2">🛡️</span>
+                <span class="text-base">Panel<br>Admin</span>
+            </a>
+            <?php endif; ?>
+
         </div>
         <?php else: ?>
         <div class="w-full max-w-4xl mx-auto mb-12">
             <a href="manage_quizzes" class="dash-btn btn-blue w-full" style="min-height:100px;">
                 <span class="text-3xl mb-2">📂</span>
-                <span class="text-base">Mes Quizz</span>
+                <span class="text-base">Les Quizz</span>
                 <span class="mt-2 text-xs bg-blue-900/50 px-3 py-1 rounded-full border border-blue-400"><?= $quiz_count ?> créés</span>
             </a>
         </div>
