@@ -36,7 +36,8 @@ switch ($action) {
         $input = json_decode(file_get_contents('php://input'), true) ?: [];
         $nick = htmlspecialchars($input['nickname'] ?? 'Anonyme');
         
-        if (session_status() === PHP_SESSION_NONE) { session_start(); }
+        if (isset($_SESSION['last_join']) && (time() - $_SESSION['last_join']) < 3) { echo json_encode(['status' => 'rate_limited']); exit; }
+        $_SESSION['last_join'] = time();
         $_SESSION['current_pin'] = $pin;
         $_SESSION['current_nick'] = $nick;
 
