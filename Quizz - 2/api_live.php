@@ -167,7 +167,8 @@ switch ($action) {
             $rtArr[$nick] = ($rtArr[$nick] ?? 0) + $timeTaken;
             $state['response_times'] = (object)$rtArr;
 
-            $isCorrect = filter_var($input['is_correct'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $currentQuestion = (array)($state['questions_list'] ?? [])[$qIdx] ?? [];
+$isCorrect = isset($currentQuestion['correct_answer']) && (int)($input['answer_index'] ?? 0) === (int)$currentQuestion['correct_answer'];
             $qList = (array)($state['questions_list'] ?? []);
             $isLastQuestion = ($qIdx === count($qList) - 1);
             
