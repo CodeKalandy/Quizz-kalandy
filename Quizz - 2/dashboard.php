@@ -29,6 +29,7 @@ $quiz_count = $stmt->fetchColumn();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="images/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
     <title>Bernard Quizz - Mon Espace</title>
     <style>
@@ -101,32 +102,61 @@ $quiz_count = $stmt->fetchColumn();
             </div>
         </div>
 
-        <div class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-<?= $can_create_quiz ? '4' : '3' ?> gap-6 mb-12 max-w-4xl mx-auto">
-            
-            <a href="host_game" class="dash-btn btn-green">
-                <span class="text-4xl mb-2">🚀</span>
-                <span class="text-xl">Lancer<br>une partie</span>
-            </a>
+        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 max-w-4xl mx-auto">
 
-            <a href="manage_quizzes" class="dash-btn btn-blue">
-                <span class="text-4xl mb-2">📂</span>
-                <span class="text-xl">Gérer<br>mes Quizz</span>
-                <span class="mt-2 text-xs bg-blue-900/50 px-3 py-1 rounded-full border border-blue-400"><?= $quiz_count ?> créés</span>
-            </a>
+            <!-- Widget Rejoindre -->
+            <div class="game-card p-6 flex flex-col items-center justify-center" style="min-height:180px;">
+                <span class="text-4xl mb-3">🎮</span>
+                <p class="title-text text-2xl text-green-400 mb-1">Rejoindre</p>
+                <p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-4">Entre le code PIN de la partie</p>
+                <input type="text" id="pin-input"
+                    class="w-full bg-[#0f172a] border-4 border-[#312e81] rounded-2xl font-black text-center text-white text-3xl tracking-[8px] p-3 outline-none focus:border-yellow-400 transition-all placeholder-indigo-700 mb-3"
+                    placeholder="• • • • • •" maxlength="6" inputmode="numeric">
+                <button onclick="joinGame()"
+                    class="w-full bg-green-500 border-4 border-green-700 text-white font-black text-lg uppercase tracking-widest py-3 rounded-2xl shadow-[0_6px_0_0_#064e3b] hover:bg-green-400 transition-all active:translate-y-2 active:shadow-none"
+                    style="text-shadow:2px 2px 0 #065f46">
+                    Rejoindre !
+                </button>
+            </div>
 
-            <?php if ($can_create_quiz): ?>
-            <a href="edit_quiz" class="dash-btn btn-yellow">
-                <span class="text-4xl mb-2">✏️</span>
-                <span class="text-xl">Créer<br>un Quizz</span>
-            </a>
-            <?php endif; ?>
-
-            <a href="profil" class="dash-btn btn-purple">
+            <!-- Profil -->
+            <a href="profil" class="dash-btn btn-purple" style="min-height:180px;">
                 <span class="text-4xl mb-2">👤</span>
                 <span class="text-xl">Mon<br>Profil</span>
             </a>
 
         </div>
+
+        <!-- Boutons créateurs / admin (si applicable) -->
+        <?php if ($can_create_quiz): ?>
+        <div class="w-full grid grid-cols-1 md:grid-cols-<?= $can_create_quiz ? '3' : '2' ?> gap-6 mb-12 max-w-4xl mx-auto">
+
+            <a href="host_game" class="dash-btn btn-green" style="min-height:140px;">
+                <span class="text-3xl mb-2">🚀</span>
+                <span class="text-base">Lancer<br>une partie</span>
+            </a>
+
+            <a href="manage_quizzes" class="dash-btn btn-blue" style="min-height:140px;">
+                <span class="text-3xl mb-2">📂</span>
+                <span class="text-base">Gérer<br>mes Quizz</span>
+                <span class="mt-2 text-xs bg-blue-900/50 px-3 py-1 rounded-full border border-blue-400"><?= $quiz_count ?> créés</span>
+            </a>
+
+            <a href="edit_quiz" class="dash-btn btn-yellow" style="min-height:140px;">
+                <span class="text-3xl mb-2">✏️</span>
+                <span class="text-base">Créer<br>un Quizz</span>
+            </a>
+
+        </div>
+        <?php else: ?>
+        <div class="w-full max-w-4xl mx-auto mb-12">
+            <a href="manage_quizzes" class="dash-btn btn-blue w-full" style="min-height:100px;">
+                <span class="text-3xl mb-2">📂</span>
+                <span class="text-base">Mes Quizz</span>
+                <span class="mt-2 text-xs bg-blue-900/50 px-3 py-1 rounded-full border border-blue-400"><?= $quiz_count ?> créés</span>
+            </a>
+        </div>
+        <?php endif; ?>
 
     </div>
 
@@ -141,5 +171,17 @@ $quiz_count = $stmt->fetchColumn();
         </p>
     </div>
 
+    <script>
+        const pinInput = document.getElementById('pin-input');
+        pinInput.addEventListener('input', () => {
+            pinInput.value = pinInput.value.replace(/\D/g,'').slice(0,6);
+        });
+        pinInput.addEventListener('keydown', (e) => { if(e.key==='Enter') joinGame(); });
+        function joinGame() {
+            const pin = pinInput.value.trim();
+            if (pin.length < 4) return pinInput.focus();
+            window.location.href = `lobby?pin=${pin}`;
+        }
+    </script>
 </body>
 </html>

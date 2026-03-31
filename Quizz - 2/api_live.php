@@ -39,7 +39,16 @@ switch ($action) {
         if (session_status() === PHP_SESSION_NONE) { session_start(); }
         $_SESSION['current_pin'] = $pin;
         $_SESSION['current_nick'] = $nick;
-        
+
+        // Vérifier si ce pseudo correspond à un compte inscrit en DB
+        // is_member = true pour TOUS les utilisateurs ayant un compte (même rôle "utilisateur")
+        // is_member = false uniquement pour les joueurs anonymes (sans compte)
+        $dbUser = $pdo->prepare("SELECT role FROM users WHERE username = ?");
+        $dbUser->execute([$nick]);
+        $dbRow = $dbUser->fetch(PDO::FETCH_ASSOC);
+        $playerIsMember = ($dbRow !== false);
+        $playerRole     = $dbRow ? $dbRow['role'] : 'anonyme';
+
         $scoresArr = (array)($state['scores'] ?? []);
         if (!isset($scoresArr[$nick])) {
             $players = (array)($state['players'] ?? []);
@@ -47,6 +56,8 @@ switch ($action) {
             // Configuration complète de l'avatar (nouveau système en couches)
             $players[] = [
                 'nickname'      => $nick,
+                'is_member'     => $playerIsMember,
+                'role'          => $playerRole,
                 // Peau
                 'skin'          => (int)($input['skin'] ?? 1),
                 'skinColor'     => (int)($input['skinColor'] ?? 0),

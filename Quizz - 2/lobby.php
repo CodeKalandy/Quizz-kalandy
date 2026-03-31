@@ -2,6 +2,8 @@
 require_once 'db.php';
 $pin = $_GET['pin'] ?? '';
 $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
+// Inscrit = accès complet. Anonyme = moitié des options, pas d'aura/effets.
+$is_logged_in = isset($_SESSION['user_id']);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -9,17 +11,21 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="images/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
     <title>Ton Bernard - Bernard Quizz</title>
     <style>
         /* === THEME GLOBAL (GAME UI) === */
-        body {
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
             background-color: #0f172a; 
             background-image: 
                 radial-gradient(at 0% 0%, #1e1b4b 0px, transparent 50%),
                 radial-gradient(at 100% 100%, #312e81 0px, transparent 50%);
-            overflow: hidden;
-            background-attachment: fixed;
             color: white;
         }
         
@@ -381,12 +387,19 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
     <script>
         const basePath = "personnage/images/sections/";
         
-        const skinColors = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-        const commonColors = [1, 8, 11, 15];
+        // Limites selon connexion : inscrit = tout, anonyme = moitié
+        const IS_LOGGED_IN = <?= $is_logged_in ? 'true' : 'false' ?>;
+
+        const skinColors    = IS_LOGGED_IN
+            ? [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+            : [1,2,3,4,5,6,7,8];
+        const commonColors  = [1, 8, 11, 15];
         const clothesColors = [1, 19, 31, 40];
         
-        const hairStyles = ['very_short', 'short', 'medium', 'long', 'shaved'];
-        const maxHairByType = { 'very_short': 15, 'short': 17, 'medium': 18, 'long': 21, 'shaved': 6 };
+        const hairStyles    = ['very_short', 'short', 'medium', 'long', 'shaved'];
+        const maxHairByType = IS_LOGGED_IN
+            ? { 'very_short': 15, 'short': 17, 'medium': 18, 'long': 21, 'shaved': 6 }
+            : { 'very_short': 7,  'short': 8,  'medium': 9,  'long': 10, 'shaved': 3 };
 
         const specialThemes = [
             { key: "none", name: "Aucun", path: "", max: 0 },
@@ -411,13 +424,13 @@ $default_nick = isset($_SESSION['username']) ? $_SESSION['username'] : '';
         let state = {
             skin: { type: 1, colorIdx: 0, maxType: 1, hasColor: true, colors: skinColors, path: "Skin/1" },
             hair: { type: 1, colorIdx: 0, maxType: 15, hasColor: true, colors: commonColors, styleIdx: 0 }, 
-            beard: { type: 0, colorIdx: 0, maxType: 11, hasColor: true, colors: commonColors, path: "Beards" },
-            mustache: { type: 0, colorIdx: 0, maxType: 11, hasColor: true, colors: commonColors, path: "Mustaches" },
-            top: { type: 1, colorIdx: 0, maxType: 20, hasColor: true, colors: clothesColors, path: "Top/Men" },
-            jacket: { type: 0, colorIdx: 0, maxType: 19, hasColor: true, colors: clothesColors, path: "Jacket/Men" }, 
+            beard:    { type: 0, colorIdx: 0, maxType: IS_LOGGED_IN ? 11 : 5,  hasColor: true, colors: commonColors,  path: "Beards" },
+            mustache: { type: 0, colorIdx: 0, maxType: IS_LOGGED_IN ? 11 : 5,  hasColor: true, colors: commonColors,  path: "Mustaches" },
+            top:      { type: 1, colorIdx: 0, maxType: IS_LOGGED_IN ? 20 : 10, hasColor: true, colors: clothesColors, path: "Top/Men" },
+            jacket:   { type: 0, colorIdx: 0, maxType: IS_LOGGED_IN ? 19 : 0,  hasColor: true, colors: clothesColors, path: "Jacket/Men" }, 
             special: { themeIdx: 0, type: 0 }, 
-            aura: { type: 0, colorIdx: 0, maxType: 5, hasColor: false },
-            effect: { type: 0, colorIdx: 0, maxType: 5, hasColor: false }
+            aura:   { type: 0, colorIdx: 0, maxType: IS_LOGGED_IN ? 5 : 0, hasColor: false },
+            effect: { type: 0, colorIdx: 0, maxType: IS_LOGGED_IN ? 5 : 0, hasColor: false }
         };
 
         function updateVisual(category) {
